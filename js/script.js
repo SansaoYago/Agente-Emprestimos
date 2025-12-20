@@ -55,17 +55,17 @@ function abrirModal(card, dados) {
         btnExcluir.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">delete</span> Excluir Registro';
         btnExcluir.style = "background:none; border:none; color:var(--corErro); cursor:pointer; margin-top:15px; font-size:0.8em; width:100%;";
         modal.querySelector('div').appendChild(btnExcluir);
-        
+
         btnExcluir.onclick = () => {
-            if(confirm("Deseja apagar este registro permanentemente?\nO valor original NÃO retornará ao saldo automaticamente.")) {
+            if (confirm("Deseja apagar este registro permanentemente?\nO valor original NÃO retornará ao saldo automaticamente.")) {
                 cardEmEdicao.remove();
                 modal.style.display = 'none';
             }
         };
     }
 
-    modalInfo.innerHTML = `Cliente: <b>${dados.cliente}</b><br>Valor unitário: ${dados.valorParcela.toLocaleString('pt-br',{style:'currency',currency:'BRL'})}`;
-    
+    modalInfo.innerHTML = `Cliente: <b>${dados.cliente}</b><br>Valor unitário: ${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}`;
+
     selectParcelas.innerHTML = '';
     for (let i = 1; i <= parcelasRestantes; i++) {
         const opt = document.createElement('option');
@@ -79,7 +79,7 @@ function abrirModal(card, dados) {
     const atualizarValorTotalUI = () => {
         const qtd = parseInt(selectParcelas.value);
         const total = dados.valorParcela * qtd;
-        displayTotal.innerHTML = `Valor a receber: <b style="color:var(--corSucesso); font-size: 1.2em;">${total.toLocaleString('pt-br',{style:'currency',currency:'BRL'})}</b>`;
+        displayTotal.innerHTML = `Valor a receber: <b style="color:var(--corSucesso); font-size: 1.2em;">${total.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</b>`;
     };
 
     atualizarValorTotalUI();
@@ -141,6 +141,12 @@ btnSalvar.onclick = () => {
         return; // O código para aqui e não salva o card
     }
     // -------------------------------------
+    // --- VALIDAÇÃO DE SALDO DISPONÍVEL ---
+    if (valor > saldoGlobal) {
+        alert("Operação negada: O valor solicitado (R$ " + valor.toFixed(2) + ") é maior que o saldo disponível em caixa.");
+        return; // Interrompe o código aqui, o empréstimo não é criado
+    }
+    // -------------------------------------
 
     saldoGlobal -= valor;
     atualizarDisplaySaldo();
@@ -151,14 +157,14 @@ btnSalvar.onclick = () => {
     const novoCard = document.createElement('div');
     novoCard.className = 'card-pagamento no-prazo animar-entrada';
     novoCard.onclick = () => abrirModal(novoCard, dados);
-    
+
     novoCard.innerHTML = `
         <div class="pagamento-dados">
             <span class="pg-cliente">${cliente}</span>
-            <span class="pg-valor">${valorParcela.toLocaleString('pt-br',{style:'currency',currency:'BRL'})} <small>(x${parcelas})</small></span>
+            <span class="pg-valor">${valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${parcelas})</small></span>
         </div>
         <div class="pagamento-detalhes">
-            <span class="pg-data">Venc: ${dataInput.split('-').reverse().slice(0,2).join('/')}</span>
+            <span class="pg-data">Venc: ${dataInput.split('-').reverse().slice(0, 2).join('/')}</span>
             <span class="pg-parcela">Parc: 1/${parcelas}</span>
         </div>
     `;
@@ -184,11 +190,11 @@ document.getElementById('btn-voltar-home').onclick = () => botoesMenu[0].click()
 
 document.getElementById('btn-inserir-capital').onclick = () => {
     const v = parseFloat(document.getElementById('input-movimentar-valor').value);
-    if(v > 0) { saldoGlobal += v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
+    if (v > 0) { saldoGlobal += v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
 };
 document.getElementById('btn-retirar-capital').onclick = () => {
     const v = parseFloat(document.getElementById('input-movimentar-valor').value);
-    if(v > 0 && v <= saldoGlobal) { saldoGlobal -= v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
+    if (v > 0 && v <= saldoGlobal) { saldoGlobal -= v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
 };
 
 atualizarDisplaySaldo();
