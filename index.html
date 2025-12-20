@@ -12,12 +12,36 @@
 </head>
 
 <body>
+    <div id="blur-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(8px); background: rgba(0,0,0,0.1); z-index: 40;">
+    </div>
     <div id="contain">
         <header>
             <span class="material-symbols-outlined" id="btn-config-topo" style="cursor: pointer;">settings</span>
             <h1>Empréstimos</h1>
             <span class="material-symbols-outlined">account_circle</span>
         </header>
+
+        <div id="menu-gestao-flutuante"
+            style="display: none; position: fixed; top: 75px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 320px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 50; flex-direction: column; gap: 12px; align-items: center;">
+            <h3 style="color: var(--corPrimaria); margin-bottom: 5px;">Gestão</h3>
+
+            <button onclick="abrirOpcaoConfig('section-config')" class="botao-opcao-modal"
+                style="width: 100%; padding: 14px; background: #f1f3f4; border: 1px solid var(--corPrimaria); color: var(--corPrimaria); border-radius: 12px; font-weight: bold; cursor: pointer;">Movimentar
+                Capital</button>
+
+            <button onclick="abrirOpcaoConfig('section-juros')" class="botao-opcao-modal"
+                style="width: 100%; padding: 14px; background: #f1f3f4; border: 1px solid var(--corPrimaria); color: var(--corPrimaria); border-radius: 12px; font-weight: bold; cursor: pointer;">Configurar
+                Juros</button>
+
+            <button onclick="abrirOpcaoConfig('section-lucros')" class="botao-opcao-modal"
+                style="width: 100%; padding: 14px; background: #f1f3f4; border: 1px solid var(--corPrimaria); color: var(--corPrimaria); border-radius: 12px; font-weight: bold; cursor: pointer;">
+                Visualizar Lucros
+            </button>
+
+            <button id="btn-fechar-gestao"
+                style="background:none; border:none; color:var(--corErro); font-size: 0.9em; cursor:pointer; margin-top: 5px;">Fechar</button>
+        </div>
 
         <main id="conteudo-principal">
             <section id="resumo">
@@ -27,8 +51,7 @@
 
             <section id="section-home" class="content-section">
                 <h2>Próximos Pagamentos</h2>
-                <div id="lista-vencimentos">
-                </div>
+                <div id="lista-vencimentos"></div>
             </section>
 
             <section id="section-history" class="content-section" style="display: none;">
@@ -46,7 +69,7 @@
                 </div>
                 <div class="form-group">
                     <label>Valor Solicitado (R$)</label>
-                    <input type="number" id="input-valor" placeholder="0.00">
+                    <input type="number" id="input-valor" placeholder="0.00" step="0.01">
                 </div>
                 <div class="form-group">
                     <label>Parcelas (Máx: 3x)</label>
@@ -63,20 +86,46 @@
                 <h2>Movimentar Capital</h2>
                 <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">Adicione ou remova fundos do saldo atual.
                 </p>
-
                 <div class="form-group">
                     <label>Valor da Operação (R$)</label>
-                    <input type="number" id="input-movimentar-valor" placeholder="0.00">
+                    <input type="number" id="input-movimentar-valor" placeholder="0.00" step="0.01">
                 </div>
-
                 <div style="display: flex; gap: 10px; width: 100%;">
                     <button id="btn-inserir-capital" class="botao-sucesso" style="flex: 1;">Inserir</button>
                     <button id="btn-retirar-capital" class="botao-sucesso"
                         style="flex: 1; background-color: var(--corErro);">Retirar</button>
                 </div>
-
                 <button id="btn-voltar-home"
                     style="background:none; border:none; color:var(--corPrimaria); margin-top:10px; cursor:pointer;">Cancelar</button>
+            </section>
+
+            <section id="section-juros" class="content-section" style="display: none;">
+                <h2>Configurar Juros</h2>
+                <p style="font-size: 0.8em; color: #666; margin-bottom: 10px; text-align: center;">Ajuste a porcentagem
+                    cobrada sobre o valor original.</p>
+                <div class="form-group">
+                    <label>Taxa de Juros (%)</label>
+                    <input type="number" id="input-taxa-juros" placeholder="Ex: 30" value="30">
+                </div>
+                <button id="btn-salvar-juros" class="botao-sucesso">Salvar Nova Taxa</button>
+                <button onclick="botoesMenu[0].click()"
+                    style="background:none; border:none; color:var(--corPrimaria); margin-top:10px; cursor:pointer;">Cancelar</button>
+            </section>
+
+            <section id="section-lucros" class="content-section" style="display: none;">
+                <h2>Lucros Acumulados</h2>
+                <p style="font-size: 0.8em; color: #666; text-align: center;">Total de juros recebidos em pagamentos
+                    finalizados.</p>
+
+                <div
+                    style="background: #e6f4ea; padding: 20px; border-radius: 15px; width: 100%; text-align: center; margin: 10px 0;">
+                    <p style="color: #1d5020; font-size: 0.9em; font-weight: bold;">TOTAL EM JUROS</p>
+                    <p id="valor-lucro-acumulado" style="font-size: 2em; color: var(--corSucesso); font-weight: bold;">
+                        R$ 0,00</p>
+                </div>
+
+                <button onclick="botoesMenu[0].click()"
+                    style="background:none; border:none; color:var(--corPrimaria); margin-top:10px; cursor:pointer;">Voltar</button>
             </section>
         </main>
 

@@ -1,6 +1,5 @@
 // 1. SELEÇÃO DE ELEMENTOS
 const botoesMenu = document.querySelectorAll('footer nav .material-symbols-outlined');
-const seccoes = document.querySelectorAll('.content-section');
 const btnSalvar = document.getElementById('btn-salvar');
 const listaVencimentos = document.getElementById('lista-vencimentos');
 const listaHistorico = document.getElementById('lista-historico');
@@ -12,33 +11,90 @@ const selectParcelas = document.getElementById('select-qtd-parcelas');
 const btnConfirmarPg = document.getElementById('btn-confirmar-pagamento');
 const btnFecharModal = document.getElementById('btn-fechar-modal');
 
+const menuGestao = document.getElementById('menu-gestao-flutuante');
+const blurOverlay = document.getElementById('blur-overlay');
+const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
+
+// VARIÁVEIS DE ESTADO
+let lucroTotal = 0.00; 
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
-let saldoGlobal = 5000.00;
+let saldoGlobal = 0;
+let taxaJurosGlobal = 1.30; // Representa 30%
 
-// 2. UTILITÁRIOS
+// 2. UTILITÁRIOS E NAVEGAÇÃO
 function atualizarDisplaySaldo() {
     campoSaldoVisivel.textContent = saldoGlobal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-}
-
-function trocarSecao(idAlvo) {
-    seccoes.forEach(sec => sec.style.display = 'none');
-    const seccaoAtiva = document.getElementById(idAlvo);
-    if (seccaoAtiva) {
-        seccaoAtiva.style.display = 'flex';
-        setTimeout(() => seccaoAtiva.classList.add('animar-entrada'), 10);
+    
+    const campoLucro = document.getElementById('valor-lucro-acumulado');
+    if (campoLucro) {
+        campoLucro.textContent = lucroTotal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
     }
 }
 
-// 3. LÓGICA DO MODAL (COM VALOR DINÂMICO E EXCLUIR)
+function trocarSecao(idAlvo) {
+    fecharMenuGestao(); 
+    
+    const todasAsSeccoes = document.querySelectorAll('.content-section');
+    todasAsSeccoes.forEach(sec => sec.style.display = 'none');
+    
+    const seccaoAtiva = document.getElementById(idAlvo);
+    if (seccaoAtiva) {
+        seccaoAtiva.style.display = 'flex';
+        seccaoAtiva.classList.remove('animar-entrada');
+        void seccaoAtiva.offsetWidth; 
+        seccaoAtiva.classList.add('animar-entrada');
+    }
+}
+
+// GESTÃO DO MENU FLUTUANTE
+function fecharMenuGestao() {
+    if(menuGestao) {
+        menuGestao.style.display = 'none';
+        blurOverlay.style.display = 'none';
+    }
+}
+
+document.getElementById('btn-config-topo').onclick = () => {
+    const isVisivel = menuGestao.style.display === 'flex';
+    if (isVisivel) fecharMenuGestao();
+    else {
+        menuGestao.style.display = 'flex';
+        blurOverlay.style.display = 'block';
+    }
+};
+
+// Vincula o botão "Fechar" de dentro do menu
+if(btnFecharMenuGestao) btnFecharMenuGestao.onclick = fecharMenuGestao;
+if(blurOverlay) blurOverlay.onclick = fecharMenuGestao;
+
+function abrirOpcaoConfig(idAlvo) {
+    fecharMenuGestao();
+    trocarSecao(idAlvo);
+}
+
+// 3. CONFIGURAÇÕES (JUROS)
+const btnSalvarJuros = document.getElementById('btn-salvar-juros');
+if(btnSalvarJuros) {
+    btnSalvarJuros.onclick = () => {
+        const novaTaxa = parseFloat(document.getElementById('input-taxa-juros').value);
+        if (!isNaN(novaTaxa) && novaTaxa >= 0) {
+            taxaJurosGlobal = 1 + (novaTaxa / 100);
+            alert(`Configurado: Juros de ${novaTaxa}% aplicados.`);
+            botoesMenu[0].click(); 
+        }
+    };
+}
+
+// 4. LÓGICA DO MODAL E RECEBIMENTOS
 function abrirModal(card, dados) {
     cardEmEdicao = card;
     dadosEmEdicao = dados;
-
     const spanParc = card.querySelector('.pg-parcela');
     const parcelaAtualNoCard = parseInt(spanParc.textContent.split(':')[1].trim().split('/')[0]);
     const parcelasRestantes = (dados.numParcelas - parcelaAtualNoCard) + 1;
 
+    // Gerenciar Display de Total no Modal
     let displayTotal = document.getElementById('display-total-modal');
     if (!displayTotal) {
         displayTotal = document.createElement('div');
@@ -47,7 +103,7 @@ function abrirModal(card, dados) {
         btnConfirmarPg.parentNode.insertBefore(displayTotal, btnConfirmarPg);
     }
 
-    // Botão de Excluir (Caso tenha cadastrado errado)
+    // Gerenciar Botão Excluir no Modal
     let btnExcluir = document.getElementById('btn-excluir-emprestimo');
     if (!btnExcluir) {
         btnExcluir = document.createElement('button');
@@ -55,9 +111,8 @@ function abrirModal(card, dados) {
         btnExcluir.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">delete</span> Excluir Registro';
         btnExcluir.style = "background:none; border:none; color:var(--corErro); cursor:pointer; margin-top:15px; font-size:0.8em; width:100%;";
         modal.querySelector('div').appendChild(btnExcluir);
-
         btnExcluir.onclick = () => {
-            if (confirm("Deseja apagar este registro permanentemente?\nO valor original NÃO retornará ao saldo automaticamente.")) {
+            if (confirm("Deseja apagar este registro permanentemente?")) {
                 cardEmEdicao.remove();
                 modal.style.display = 'none';
             }
@@ -65,7 +120,7 @@ function abrirModal(card, dados) {
     }
 
     modalInfo.innerHTML = `Cliente: <b>${dados.cliente}</b><br>Valor unitário: ${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}`;
-
+    
     selectParcelas.innerHTML = '';
     for (let i = 1; i <= parcelasRestantes; i++) {
         const opt = document.createElement('option');
@@ -74,36 +129,35 @@ function abrirModal(card, dados) {
         selectParcelas.appendChild(opt);
     }
 
-    selectParcelas.value = "1";
-
     const atualizarValorTotalUI = () => {
         const qtd = parseInt(selectParcelas.value);
         const total = dados.valorParcela * qtd;
         displayTotal.innerHTML = `Valor a receber: <b style="color:var(--corSucesso); font-size: 1.2em;">${total.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</b>`;
     };
-
     atualizarValorTotalUI();
     selectParcelas.onchange = atualizarValorTotalUI;
     modal.style.display = 'flex';
 }
 
-btnFecharModal.onclick = () => { modal.style.display = 'none'; };
-
 btnConfirmarPg.onclick = () => {
     const qtdSelecionada = parseInt(selectParcelas.value);
     const spanParc = cardEmEdicao.querySelector('.pg-parcela');
     let parcelaAtual = parseInt(spanParc.textContent.split(':')[1].trim().split('/')[0]);
-
-    saldoGlobal += (dadosEmEdicao.valorParcela * qtdSelecionada);
+    
+    const valorRecebido = dadosEmEdicao.valorParcela * qtdSelecionada;
+    const proporcaoJuros = (taxaJurosGlobal - 1) / taxaJurosGlobal;
+    const lucroDestaOperacao = valorRecebido * proporcaoJuros;
+    
+    lucroTotal += lucroDestaOperacao;
+    saldoGlobal += valorRecebido;
+    
     atualizarDisplaySaldo();
 
     const novaParcelaIndice = parcelaAtual + qtdSelecionada;
-
     if (novaParcelaIndice > dadosEmEdicao.numParcelas) {
         finalizarCard(cardEmEdicao);
     } else {
         spanParc.textContent = `Parc: ${novaParcelaIndice}/${dadosEmEdicao.numParcelas}`;
-        alert(`Recebido ${qtdSelecionada} parcela(s).`);
     }
     modal.style.display = 'none';
 };
@@ -118,40 +172,21 @@ function finalizarCard(card) {
     listaHistorico.prepend(card);
 }
 
-// 4. SALVAR EMPRÉSTIMO COM VALIDAÇÃO (VERSÃO BLOQUEIO TOTAL)
+// 5. SALVAR NOVO EMPRÉSTIMO
 btnSalvar.onclick = () => {
     const cliente = document.getElementById('input-cliente').value;
     const valor = parseFloat(document.getElementById('input-valor').value);
     const dataInput = document.getElementById('input-data').value;
     const parcelas = parseInt(document.getElementById('input-parcelas').value) || 1;
 
-    // Validação de campos vazios
-    if (!cliente || isNaN(valor) || !dataInput) {
-        return alert("Preencha todos os campos!");
-    }
-
-    // --- VALIDAÇÃO DE DATA (BLOQUEIO) ---
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const dataEscolhida = new Date(dataInput + "T00:00:00");
-
-    if (dataEscolhida < hoje) {
-        // Aqui ele apenas avisa e interrompe o salvamento
-        alert("Erro: Não é permitido registrar pagamentos com datas passadas.");
-        return; // O código para aqui e não salva o card
-    }
-    // -------------------------------------
-    // --- VALIDAÇÃO DE SALDO DISPONÍVEL ---
-    if (valor > saldoGlobal) {
-        alert("Operação negada: O valor solicitado (R$ " + valor.toFixed(2) + ") é maior que o saldo disponível em caixa.");
-        return; // Interrompe o código aqui, o empréstimo não é criado
-    }
-    // -------------------------------------
+    if (!cliente || isNaN(valor) || !dataInput) return alert("Preencha todos os campos!");
+    if (valor > saldoGlobal) return alert("Saldo insuficiente.");
+    if (parcelas > 3) return alert("O limite máximo é de 3 parcelas.");
 
     saldoGlobal -= valor;
     atualizarDisplaySaldo();
 
-    const valorParcela = (valor * 1.30) / parcelas;
+    const valorParcela = (valor * taxaJurosGlobal) / parcelas;
     const dados = { cliente, valorParcela, numParcelas: parcelas };
 
     const novoCard = document.createElement('div');
@@ -175,7 +210,7 @@ btnSalvar.onclick = () => {
     botoesMenu[0].click();
 };
 
-// 5. NAVEGAÇÃO E MOVIMENTAÇÃO
+// 6. NAVEGAÇÃO DO RODAPÉ
 botoesMenu.forEach((btn, i) => {
     btn.onclick = () => {
         const ids = ['section-home', 'section-history', 'section-cadastro'];
@@ -185,9 +220,7 @@ botoesMenu.forEach((btn, i) => {
     };
 });
 
-document.getElementById('btn-config-topo').onclick = () => trocarSecao('section-config');
-document.getElementById('btn-voltar-home').onclick = () => botoesMenu[0].click();
-
+// MOVIMENTAÇÃO DE CAPITAL
 document.getElementById('btn-inserir-capital').onclick = () => {
     const v = parseFloat(document.getElementById('input-movimentar-valor').value);
     if (v > 0) { saldoGlobal += v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
@@ -197,5 +230,9 @@ document.getElementById('btn-retirar-capital').onclick = () => {
     if (v > 0 && v <= saldoGlobal) { saldoGlobal -= v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
 };
 
+document.getElementById('btn-voltar-home').onclick = () => botoesMenu[0].click();
+btnFecharModal.onclick = () => { modal.style.display = 'none'; };
+
+// INICIALIZAÇÃO
 atualizarDisplaySaldo();
 trocarSecao('section-home');
