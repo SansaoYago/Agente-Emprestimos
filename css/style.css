@@ -213,6 +213,18 @@ main {
     color: var(--corErro) !important;
 }
 
+/* Efeito de suavidade no valor */
+.valor-capital {
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Classe que o JavaScript vai adicionar/remover */
+.ocultar-capital {
+    filter: blur(8px);
+    opacity: 0.6;
+    pointer-events: none; /* Impede selecionar o texto quando oculto */
+}
+
 /* AJUSTE DO MODAL DE VALIDAÇÃO (Para garantir que apareça sobre tudo) */
 #modal-validacao {
     z-index: 3000 !important;

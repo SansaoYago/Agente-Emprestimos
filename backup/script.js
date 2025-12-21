@@ -120,19 +120,19 @@ function abrirModal(card, dados) {
         containerBlacklist = document.createElement('div');
         containerBlacklist.id = 'container-blacklist-modal';
         containerBlacklist.style = "margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; border-top: 1px solid #eee; padding-top: 10px;";
-        
+
         containerBlacklist.innerHTML = `
             <input type="checkbox" id="check-blacklist-modal" style="accent-color: var(--corErro); cursor:pointer;">
             <label for="check-blacklist-modal" style="font-size: 0.8em; color: var(--corErro); font-weight: bold; cursor:pointer;">Negativar Cliente</label>
         `;
-        
+
         // Insere abaixo do botão de excluir
         btnExcluir.parentNode.appendChild(containerBlacklist);
     }
 
     // Resetar o estado do checkbox toda vez que abrir o modal
     const checkbox = document.getElementById('check-blacklist-modal');
-    checkbox.checked = false; 
+    checkbox.checked = false;
 
     // Lógica para salvar na Black List ao clicar no checkbox
     checkbox.onchange = () => {
@@ -210,6 +210,14 @@ function finalizarCard(card) {
 // 5. SALVAR COM VALIDAÇÃO WHATSAPP E TRAVAS DE SEGURANÇA
 btnSalvar.onclick = () => {
     const cliente = document.getElementById('input-cliente').value;
+
+    // --- TRAVA DE SEGURANÇA: BLACK LIST ---
+    if (listaNegativadosGlobal.some(nome => nome.toLowerCase() === cliente.toLowerCase())) {
+        alert(`ACESSO NEGADO: O cliente ${cliente} está na Black List.`);
+        return;
+    }
+    // ---------------------------------------
+
     const whatsapp = document.getElementById('input-whatsapp').value;
     const valor = parseFloat(document.getElementById('input-valor').value);
     const dataInput = document.getElementById('input-data').value;
@@ -453,9 +461,106 @@ const limparCapital = () => {
     }, 100); // Aguarda 100ms para garantir que a conta foi feita antes de limpar
 };
 
-if(document.getElementById('btn-inserir-capital')) {
+if (document.getElementById('btn-inserir-capital')) {
     document.getElementById('btn-inserir-capital').addEventListener('click', limparCapital);
 }
-if(document.getElementById('btn-retirar-capital')) {
+if (document.getElementById('btn-retirar-capital')) {
     document.getElementById('btn-retirar-capital').addEventListener('click', limparCapital);
 }
+
+// REGISTRA O CLIENTE NA BLACK LIST VISUALMENTE
+function adicionarABlackList(nome, whatsapp) {
+    if (!listaNegativadosGlobal.includes(nome)) {
+        listaNegativadosGlobal.push(nome);
+    }
+
+    const listaUI = document.getElementById('lista-negativados');
+
+    if (listaUI) {
+        // Limpa avisos de lista vazia
+        if (listaUI.innerText.includes("Nenhum") || listaUI.querySelector('p')) {
+            listaUI.innerHTML = '';
+        }
+
+        const item = document.createElement('div');
+        item.className = 'card-pagamento em-atraso animar-entrada';
+        item.style = "cursor: default; width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: white; padding: 15px; border-radius: 12px; border-left: 5px solid var(--corErro);";
+
+        item.innerHTML = `
+            <div class="pagamento-dados">
+                <span class="pg-cliente" style="font-weight:bold; display:block;">${nome}</span>
+                <span style="font-size:0.8em; color:#666;">WhatsApp: ${whatsapp}</span>
+            </div>
+            <span class="material-symbols-outlined" style="color:var(--corErro)">block</span>
+        `;
+
+        listaUI.prepend(item);
+    }
+}
+
+//Botão de visibilidade
+
+// Seleção dos elementos
+const btnPrivacidade = document.getElementById('btn-privacidade');
+const valorCapital = document.querySelector('.valor-capital');
+
+// Evento de Clique
+btnPrivacidade.onclick = () => {
+    // 1. Alterna a classe
+    valorCapital.classList.toggle('ocultar-capital');
+
+    // 2. Verifica o estado atual
+    const estaOculto = valorCapital.classList.contains('ocultar-capital');
+
+    // 3. Troca o ícone (Ternário)
+    btnPrivacidade.textContent = estaOculto ? 'visibility_off' : 'visibility';
+
+    // 4. SALVA NO LOCALSTORAGE:
+    // Salva 'true' se estiver oculto, 'false' se estiver visível
+    localStorage.setItem('privacidadeSaldo', estaOculto);
+};
+
+// FUNÇÃO PARA CARREGAR PREFERÊNCIA DE PRIVACIDADE
+function carregarPreferenciaPrivacidade() {
+    const salvoOculto = localStorage.getItem('privacidadeSaldo');
+
+    // Se no banco estiver 'true', aplica o ocultar
+    if (salvoOculto === 'true') {
+        valorCapital.classList.add('ocultar-capital');
+        btnPrivacidade.textContent = 'visibility_off';
+    }
+}
+
+// Chame a função para ela rodar ao abrir a página
+carregarPreferenciaPrivacidade();
+
+// ==========================================
+// FUNÇÃO DE CARGA DE TESTES (DADOS TEMPORÁRIOS)
+// ==========================================
+/*function carregarTestes() {
+    const dadosDeTeste = [
+        { cliente: "Ricardo Souza", whatsapp: "11999999999", valor: 1000, parcelas: 3, dataInput: "2023-10-10" },
+        { cliente: "Ana Beatriz", whatsapp: "11888888888", valor: 1000, parcelas: 3, dataInput: "2026-01-30" },
+        { cliente: "Marcos Lima", whatsapp: "11777777777", valor: 500, parcelas: 1, dataInput: "2026-02-15" }
+    ];
+
+    dadosDeTeste.forEach(d => {
+        // Calcula os juros baseados na sua variável global (1.30)
+        const valorTotalComJuros = d.valor * taxaJurosGlobal;
+        const valorParcela = valorTotalComJuros / d.parcelas;
+
+        // Injeta os dados na sua função principal de criação de cards
+        processarSalvamento({
+            cliente: d.cliente,
+            whatsapp: d.whatsapp,
+            valor: d.valor,
+            valorParcela: valorParcela,
+            parcelas: d.parcelas,
+            dataInput: d.dataInput
+        });
+    });
+    console.log("✅ Testes carregados: Ricardo (Atrasado), Ana (3x), Marcos (1x).");
+}
+
+// EXECUTA A CARGA ASSIM QUE O ARQUIVO É LIDO
+carregarTestes();*/

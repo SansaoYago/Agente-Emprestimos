@@ -498,6 +498,41 @@ function adicionarABlackList(nome, whatsapp) {
     }
 }
 
+//Botão de visibilidade
+
+// Seleção dos elementos
+const btnPrivacidade = document.getElementById('btn-privacidade');
+const valorCapital = document.querySelector('.valor-capital');
+
+// Evento de Clique
+btnPrivacidade.onclick = () => {
+    // 1. Alterna a classe
+    valorCapital.classList.toggle('ocultar-capital');
+
+    // 2. Verifica o estado atual
+    const estaOculto = valorCapital.classList.contains('ocultar-capital');
+
+    // 3. Troca o ícone (Ternário)
+    btnPrivacidade.textContent = estaOculto ? 'visibility_off' : 'visibility';
+
+    // 4. SALVA NO LOCALSTORAGE:
+    // Salva 'true' se estiver oculto, 'false' se estiver visível
+    localStorage.setItem('privacidadeSaldo', estaOculto);
+};
+
+// FUNÇÃO PARA CARREGAR PREFERÊNCIA DE PRIVACIDADE
+function carregarPreferenciaPrivacidade() {
+    const salvoOculto = localStorage.getItem('privacidadeSaldo');
+
+    // Se no banco estiver 'true', aplica o ocultar
+    if (salvoOculto === 'true') {
+        valorCapital.classList.add('ocultar-capital');
+        btnPrivacidade.textContent = 'visibility_off';
+    }
+}
+
+// Chame a função para ela rodar ao abrir a página
+carregarPreferenciaPrivacidade();
 
 // ==========================================
 // FUNÇÃO DE CARGA DE TESTES (DADOS TEMPORÁRIOS)
