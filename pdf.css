@@ -31,6 +31,7 @@ body{
     /* faz o card respeitar a tela (mobile-first) sem criar scroll */
     width: min(8.5in, 100vw);
     height: min(11in, 100vh);
+    min-height: 100vh; /* garante que a página cubra até o bottom */
     box-sizing: border-box;
     margin: 0 auto;
     position: relative;
@@ -74,7 +75,7 @@ body{
 .installments th, .installments td{ padding:8px 10px; text-align:left; border-bottom:1px solid rgba(0,0,0,0.06); }
 
 .pdf-footer{
-    position: fixed;
+    position: absolute; /* agora fica dentro da .page, para o background cobrir até aqui */
     bottom: 24px;
     left: 0;
     right: 0;
