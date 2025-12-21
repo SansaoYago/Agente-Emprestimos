@@ -8,19 +8,34 @@ function _buildElementFor(type, payload) {
         const dados = payload;
         const totalComJuros = dados.valorParcela * dados.numParcelas;
         el.innerHTML = `
-            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
-                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
-                    <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
-                    <hr>
-                    <p><strong>Cliente:</strong> ${dados.cliente}</p>
-                    <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
-                    <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
-                    <br>
-                    <h3>Resumo:</h3>
-                    <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</strong>.</p>
-                    <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-                    <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
-                </div>
+            <div class="page" style="box-sizing:border-box;">
+                <header class="pdf-header">
+                    <div class="logo">Agente Empréstimos</div>
+                    <div class="doc-title">COMPROVANTE DE EMPRÉSTIMO</div>
+                </header>
+                <section class="client-info">
+                    <div><strong>Cliente:</strong> ${dados.cliente}</div>
+                    <div><strong>WhatsApp:</strong> ${dados.whatsapp}</div>
+                    <div><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</div>
+                </section>
+                <section class="summary">
+                    <h3>Resumo</h3>
+                    <div class="row"><span>Valor solicitado</span><span class="value">${dados.valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
+                    <div class="row"><span>Juros</span><span class="value">${((dados.valorParcela * dados.numParcelas - dados.valor) / dados.valor * 100).toFixed(0)}%</span></div>
+                    <div class="row"><span>Parcelas</span><span class="value">${dados.numParcelas}x</span></div>
+                    <div class="row total"><span>Total</span><span class="value">${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
+                </section>
+                <section class="installments">
+                    <h3>Parcelas</h3>
+                    <table>
+                        <thead><tr><th>Parcela</th><th>Vencimento</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <!-- apenas um resumo: 1ª parcela com data fornecida -->
+                            <tr><td>1/${dados.numParcelas}</td><td>${dados.dataVencimento.split('-').reverse().join('/')}</td><td>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+                <footer class="pdf-footer"><div class="assinatura">ASSINATURA</div></footer>
             </div>
         `;
         return { element: el, filename: `Recibo_${dados.cliente}_emprestimo.pdf` };
@@ -29,19 +44,26 @@ function _buildElementFor(type, payload) {
     if (type === 'pagamento') {
         const { cliente, qtd, valor, restantes } = payload;
         el.innerHTML = `
-            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
-                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
-                    <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
-                    <hr>
-                    <p><strong>Recebemos de:</strong> ${cliente}</p>
-                    <p><strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-                    <p><strong>Referente a:</strong> ${qtd} parcela(s)</p>
-                    <p><strong>Data:</strong> ${new Date().toLocaleString('pt-br')}</p>
-                    <br>
+            <div class="page" style="box-sizing:border-box;">
+                <header class="pdf-header">
+                    <div class="logo">Agente Empréstimos</div>
+                    <div class="doc-title">RECIBO DE PAGAMENTO</div>
+                </header>
+                <section class="client-info">
+                    <div><strong>Recebemos de:</strong> ${cliente}</div>
+                    <div><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</div>
+                </section>
+                <section class="summary">
+                    <h3>Detalhes</h3>
+                    <div class="row"><span>Valor Pago</span><span class="value">${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
+                    <div class="row total"><span>Parcelas</span><span class="value">${qtd}x</span></div>
+                </section>
+                <section class="installments">
                     <div style="background: rgba(248,249,250,0.8); padding: 15px; text-align: center; border-radius: 5px;">
                         <strong>${restantes > 0 ? `Ainda restam ${restantes} parcelas para este empréstimo.` : "Empréstimo TOTALMENTE QUITADO. Obrigado!"}</strong>
                     </div>
-                </div>
+                </section>
+                <footer class="pdf-footer"><div class="assinatura">ASSINATURA</div></footer>
             </div>
         `;
         return { element: el, filename: `Recibo_Pagamento_${cliente}_${Date.now()}.pdf` };
@@ -65,16 +87,44 @@ function _renderPdf(element, filename) {
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    try {
-        html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            html2pdf().set(opt).from(element).save();
-            setTimeout(() => URL.revokeObjectURL(url), 10000);
-        });
-    } catch (err) {
-        console.error('Erro ao gerar PDF:', err);
-    }
+    // Antes de gerar, tente carregar o CSS do template `pdf.css` e injetar no elemento
+    // para que o PDF herde o mesmo estilo do `pdf.html`.
+    fetch('pdf.css').then(resp => {
+        if (!resp.ok) return '';
+        return resp.text();
+    }).then(cssText => {
+        try {
+            // Remove estilo anterior se existir
+            const existing = element.querySelector('style[data-pdf-css]');
+            if (existing) existing.remove();
+            const style = document.createElement('style');
+            style.setAttribute('data-pdf-css', '');
+            style.textContent = cssText || '';
+            // Inserir no topo do elemento para aplicar o CSS
+            element.insertBefore(style, element.firstChild);
+
+            html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                html2pdf().set(opt).from(element).save();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+            });
+        } catch (err) {
+            console.error('Erro ao gerar PDF:', err);
+        }
+    }).catch(e => {
+        console.warn('Não foi possível carregar pdf.css, gerando sem estilo externo.', e);
+        try {
+            html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                html2pdf().set(opt).from(element).save();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+            });
+        } catch (err) {
+            console.error('Erro ao gerar PDF:', err);
+        }
+    });
 }
 
 export function gerarDocumento(tipo, payload) {
