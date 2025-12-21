@@ -93,7 +93,6 @@ body{
         text-align: center;
         padding: 12px 18px;
         border-top: 2px dashed rgba(0,0,0,0.2);
-        background: rgba(255,255,255,0.75);
         border-radius: 6px;
         pointer-events: auto; /* permite a API inserir elementos clicáveis dentro */
     }
@@ -113,3 +112,16 @@ body{
 
 /* Helpers to tweak contrast - altere ao testar */
 .overlay{ background: rgba(255,255,255,0.9); }
+
+/* Layout para telas maiores: página com largura do conteúdo e padding lateral 15px */
+@media (min-width: 900px) {
+    .page {
+        width: auto;
+        max-width: 8.5in;
+        height: auto; /* permite que o conteúdo se estenda verticalmente */
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
