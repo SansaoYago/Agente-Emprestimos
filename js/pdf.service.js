@@ -8,7 +8,7 @@ function _buildElementFor(type, payload) {
         const dados = payload;
         const totalComJuros = dados.valorParcela * dados.numParcelas;
         el.innerHTML = `
-            <div style="border: 2px solid #1a73e8; padding: 20px; border-radius: 10px;">
+            <div style="padding: 20px; border-radius: 10px; background-image: url('img/pdf-bg.jpg'); background-size: cover; background-position: center;">
                 <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
                 <hr>
                 <p><strong>Cliente:</strong> ${dados.cliente}</p>
@@ -27,7 +27,7 @@ function _buildElementFor(type, payload) {
     if (type === 'pagamento') {
         const { cliente, qtd, valor, restantes } = payload;
         el.innerHTML = `
-            <div style="border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
+            <div style="padding: 20px; border-radius: 10px; background-image: url('img/pdf-bg.jpg'); background-size: cover; background-position: center;">
                 <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
                 <hr>
                 <p><strong>Recebemos de:</strong> ${cliente}</p>
