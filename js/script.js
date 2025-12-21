@@ -1,32 +1,5 @@
-// 1. SELEÇÃO DE ELEMENTOS
-const botoesMenu = document.querySelectorAll('footer nav .material-symbols-outlined');
-const btnSalvar = document.getElementById('btn-salvar');
-const listaVencimentos = document.getElementById('lista-vencimentos');
-const listaHistorico = document.getElementById('lista-historico');
-const campoSaldoVisivel = document.querySelector('.valor-capital');
-
-const modal = document.getElementById('modal-pagamento');
-const modalInfo = document.getElementById('modal-info');
-const selectParcelas = document.getElementById('select-qtd-parcelas');
-const btnConfirmarPg = document.getElementById('btn-confirmar-pagamento');
-const btnFecharModal = document.getElementById('btn-fechar-modal');
-
-const menuGestao = document.getElementById('menu-gestao-flutuante');
-const blurOverlay = document.getElementById('blur-overlay');
-const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
-
-const modalValidacao = document.getElementById('modal-validacao');
-const inputCodigo = document.getElementById('input-codigo-recebido');
-
-// VARIÁVEIS DE ESTADO
-let lucroTotal = 0.00;
-let cardEmEdicao = null;
-let dadosEmEdicao = null;
-let saldoGlobal = 0;
-let taxaJurosGlobal = 1.30;
-let codigoGeradoLocal = null;
-let dadosTemporarios = null;
-let listaNegativadosGlobal = [];
+// Arquivo sobrescrito: lógica original movida para `js/main.js` e versão legado em `js/script.legacy.js`.
+// Este arquivo foi deixado vazio para evitar conflitos de escopo ao carregar módulos.
 
 // 2. UTILITÁRIOS E NAVEGAÇÃO
 function atualizarDisplaySaldo() {
@@ -358,8 +331,21 @@ function gerarComprovantePDF(dados) {
     };
 
     // Tenta gerar o PDF
+    // Tenta gerar o PDF
     try {
-        html2pdf().set(opt).from(elementoPDF).save();
+        html2pdf().set(opt).from(elementoPDF).toPdf().output('blob').then((blob) => {
+            // Cria uma URL para o arquivo PDF gerado
+            const url = URL.createObjectURL(blob);
+            
+            // Abre o PDF em uma nova aba (melhora visualização no mobile)
+            window.open(url, '_blank');
+
+            // Mantém o download automático como backup
+            html2pdf().set(opt).from(elementoPDF).save();
+            
+            // Limpa a memória após um tempo
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+        });
     } catch (err) {
         console.error("Erro ao gerar PDF:", err);
     }
@@ -498,6 +484,41 @@ function adicionarABlackList(nome, whatsapp) {
     }
 }
 
+//Botão de visibilidade
+
+// Seleção dos elementos
+const btnPrivacidade = document.getElementById('btn-privacidade');
+const valorCapital = document.querySelector('.valor-capital');
+
+// Evento de Clique
+btnPrivacidade.onclick = () => {
+    // 1. Alterna a classe
+    valorCapital.classList.toggle('ocultar-capital');
+
+    // 2. Verifica o estado atual
+    const estaOculto = valorCapital.classList.contains('ocultar-capital');
+
+    // 3. Troca o ícone (Ternário)
+    btnPrivacidade.textContent = estaOculto ? 'visibility_off' : 'visibility';
+
+    // 4. SALVA NO LOCALSTORAGE:
+    // Salva 'true' se estiver oculto, 'false' se estiver visível
+    localStorage.setItem('privacidadeSaldo', estaOculto);
+};
+
+// FUNÇÃO PARA CARREGAR PREFERÊNCIA DE PRIVACIDADE
+function carregarPreferenciaPrivacidade() {
+    const salvoOculto = localStorage.getItem('privacidadeSaldo');
+
+    // Se no banco estiver 'true', aplica o ocultar
+    if (salvoOculto === 'true') {
+        valorCapital.classList.add('ocultar-capital');
+        btnPrivacidade.textContent = 'visibility_off';
+    }
+}
+
+// Chame a função para ela rodar ao abrir a página
+carregarPreferenciaPrivacidade();
 
 // ==========================================
 // FUNÇÃO DE CARGA DE TESTES (DADOS TEMPORÁRIOS)

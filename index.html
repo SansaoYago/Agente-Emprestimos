@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
     <title>Sistema de Empréstimos</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
@@ -51,7 +52,13 @@
         <main id="conteudo-principal">
             <section id="resumo">
                 <p class="label-capital">SALDO DISPONÍVEL</p>
-                <p class="valor-capital">R$ 0,00</p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <p class="valor-capital">R$ 0,00</p>
+                    <span id="btn-privacidade" class="material-symbols-outlined"
+                        style="cursor: pointer; color: var(--corPrimaria); user-select: none; font-size: 20px;">
+                        visibility
+                    </span>
+                </div>
             </section>
 
             <section id="section-home" class="content-section">
@@ -194,7 +201,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="js/script.js"></script>
+
+    <script type="module" src="js/main.js"></script>
+
 </body>
 
 </html>
