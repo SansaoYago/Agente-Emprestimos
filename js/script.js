@@ -22,7 +22,7 @@ const inputCodigo = document.getElementById('input-codigo-recebido');
 let lucroTotal = 0.00;
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
-let saldoGlobal = 0;
+let saldoGlobal = 5000;
 let taxaJurosGlobal = 1.30;
 let codigoGeradoLocal = null;
 let dadosTemporarios = null;
@@ -358,8 +358,21 @@ function gerarComprovantePDF(dados) {
     };
 
     // Tenta gerar o PDF
+    // Tenta gerar o PDF
     try {
-        html2pdf().set(opt).from(elementoPDF).save();
+        html2pdf().set(opt).from(elementoPDF).toPdf().output('blob').then((blob) => {
+            // Cria uma URL para o arquivo PDF gerado
+            const url = URL.createObjectURL(blob);
+            
+            // Abre o PDF em uma nova aba (melhora visualização no mobile)
+            window.open(url, '_blank');
+
+            // Mantém o download automático como backup
+            html2pdf().set(opt).from(elementoPDF).save();
+            
+            // Limpa a memória após um tempo
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+        });
     } catch (err) {
         console.error("Erro ao gerar PDF:", err);
     }
