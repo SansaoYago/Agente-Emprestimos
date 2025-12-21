@@ -19,11 +19,11 @@ const modalValidacao = document.getElementById('modal-validacao');
 const inputCodigo = document.getElementById('input-codigo-recebido');
 
 // VARIÁVEIS DE ESTADO
-let lucroTotal = 0.00; 
+let lucroTotal = 0.00;
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
 let saldoGlobal = 0;
-let taxaJurosGlobal = 1.30; 
+let taxaJurosGlobal = 1.30;
 let codigoGeradoLocal = null;
 let dadosTemporarios = null;
 
@@ -35,19 +35,19 @@ function atualizarDisplaySaldo() {
 }
 
 function trocarSecao(idAlvo) {
-    fecharMenuGestao(); 
+    fecharMenuGestao();
     document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
     const seccaoAtiva = document.getElementById(idAlvo);
     if (seccaoAtiva) {
         seccaoAtiva.style.display = 'flex';
         seccaoAtiva.classList.remove('animar-entrada');
-        void seccaoAtiva.offsetWidth; 
+        void seccaoAtiva.offsetWidth;
         seccaoAtiva.classList.add('animar-entrada');
     }
 }
 
 function fecharMenuGestao() {
-    if(menuGestao) {
+    if (menuGestao) {
         menuGestao.style.display = 'none';
         blurOverlay.style.display = 'none';
     }
@@ -62,8 +62,8 @@ document.getElementById('btn-config-topo').onclick = () => {
     }
 };
 
-if(btnFecharMenuGestao) btnFecharMenuGestao.onclick = fecharMenuGestao;
-if(blurOverlay) blurOverlay.onclick = fecharMenuGestao;
+if (btnFecharMenuGestao) btnFecharMenuGestao.onclick = fecharMenuGestao;
+if (blurOverlay) blurOverlay.onclick = fecharMenuGestao;
 
 function abrirOpcaoConfig(idAlvo) {
     fecharMenuGestao();
@@ -72,13 +72,13 @@ function abrirOpcaoConfig(idAlvo) {
 
 // 3. CONFIGURAÇÕES (JUROS)
 const btnSalvarJuros = document.getElementById('btn-salvar-juros');
-if(btnSalvarJuros) {
+if (btnSalvarJuros) {
     btnSalvarJuros.onclick = () => {
         const novaTaxa = parseFloat(document.getElementById('input-taxa-juros').value);
         if (!isNaN(novaTaxa) && novaTaxa >= 0) {
             taxaJurosGlobal = 1 + (novaTaxa / 100);
             alert(`Configurado: Juros de ${novaTaxa}% aplicados.`);
-            botoesMenu[0].click(); 
+            botoesMenu[0].click();
         }
     };
 }
@@ -115,7 +115,7 @@ function abrirModal(card, dados) {
     }
 
     modalInfo.innerHTML = `Cliente: <b>${dados.cliente}</b><br>Valor unitário: ${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}`;
-    
+
     selectParcelas.innerHTML = '';
     for (let i = 1; i <= parcelasRestantes; i++) {
         const opt = document.createElement('option');
@@ -138,16 +138,24 @@ btnConfirmarPg.onclick = () => {
     const qtdSelecionada = parseInt(selectParcelas.value);
     const spanParc = cardEmEdicao.querySelector('.pg-parcela');
     let parcelaAtual = parseInt(spanParc.textContent.split(':')[1].trim().split('/')[0]);
-    
+
     const valorRecebido = dadosEmEdicao.valorParcela * qtdSelecionada;
     const proporcaoJuros = (taxaJurosGlobal - 1) / taxaJurosGlobal;
     const lucroDestaOperacao = valorRecebido * proporcaoJuros;
-    
+
     lucroTotal += lucroDestaOperacao;
     saldoGlobal += valorRecebido;
     atualizarDisplaySaldo();
 
     const novaParcelaIndice = parcelaAtual + qtdSelecionada;
+    const parcelasRestantes = dadosEmEdicao.numParcelas - (novaParcelaIndice - 1);
+
+    // --- NOVIDADE: REGISTRA O PAGAMENTO ESPECÍFICO NO HISTÓRICO ---
+    registrarNoHistorico(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, novaParcelaIndice > dadosEmEdicao.numParcelas);
+
+    // --- NOVIDADE: GERA O PDF DO RECEBIMENTO DESTA PARCELA ---
+    gerarReciboPagamentoPDF(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, parcelasRestantes);
+
     if (novaParcelaIndice > dadosEmEdicao.numParcelas) {
         finalizarCard(cardEmEdicao);
     } else {
@@ -189,20 +197,20 @@ btnSalvar.onclick = () => {
     if (valor > saldoGlobal) {
         return alert("Saldo insuficiente no capital disponível.");
     }
-    
+
     // D. Preparação para o WhatsApp
     codigoGeradoLocal = Math.floor(100 + Math.random() * 900);
     const valorTotalComJuros = valor * taxaJurosGlobal;
     const valorParcela = valorTotalComJuros / parcelas;
-    
+
     dadosTemporarios = { cliente, whatsapp, valor, valorParcela, parcelas, dataInput };
 
     const msg = `Olá ${cliente}, para validar seu empréstimo de R$ ${valor.toFixed(2)}, informe este código: *${codigoGeradoLocal}*\n\n` +
-                `*DETALHES:* ${parcelas}x de R$ ${valorParcela.toFixed(2)} | Total: R$ ${valorTotalComJuros.toFixed(2)}`;
+        `*DETALHES:* ${parcelas}x de R$ ${valorParcela.toFixed(2)} | Total: R$ ${valorTotalComJuros.toFixed(2)}`;
 
     // Abre o WhatsApp
     window.open(`https://wa.me/55${whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-    
+
     // Mostra o Modal de Validação
     document.getElementById('msg-validacao-whatsapp').innerHTML = `Enviamos um código para o WhatsApp de <b>${cliente}</b>.<br>Peça ao cliente e digite abaixo:`;
     modalValidacao.style.display = 'flex';
@@ -238,32 +246,32 @@ function processarSalvamento(d) {
 
     const novoCard = document.createElement('div');
     novoCard.className = `card-pagamento ${classeStatus} animar-entrada`;
-    
-    const dadosCard = { 
-        cliente: d.cliente, 
-        valorParcela: d.valorParcela, 
-        numParcelas: d.parcelas, 
+
+    const dadosCard = {
+        cliente: d.cliente,
+        valorParcela: d.valorParcela,
+        numParcelas: d.parcelas,
         whatsapp: d.whatsapp,
-        dataVencimento: d.dataInput 
+        dataVencimento: d.dataInput
     };
-    
+
     novoCard.onclick = () => abrirModal(novoCard, dadosCard);
 
     novoCard.innerHTML = `
-        <div class="pagamento-dados">
-            <span class="pg-cliente">${d.cliente}</span>
-            <span class="pg-valor">${d.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${d.parcelas})</small></span>
-        </div>
-        <div class="pagamento-detalhes">
-            <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
-                Venc: ${d.dataInput.split('-').reverse().slice(0, 2).join('/')}
-            </span>
-            <span class="pg-parcela">Parc: 1/${d.parcelas}</span>
-        </div>
-    `;
+        <div class="pagamento-dados">
+            <span class="pg-cliente">${d.cliente}</span>
+            <span class="pg-valor">${d.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${d.parcelas})</small></span>
+        </div>
+        <div class="pagamento-detalhes">
+            <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
+                Venc: ${d.dataInput.split('-').reverse().slice(0, 2).join('/')}
+            </span>
+            <span class="pg-parcela">Parc: 1/${d.parcelas}</span>
+        </div>
+    `;
 
     listaVencimentos.appendChild(novoCard);
-    gerarComprovantePDF(dadosCard); 
+    gerarComprovantePDF(dadosCard);
 
     // Limpa o formulário
     document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
@@ -286,26 +294,26 @@ function gerarComprovantePDF(dados) {
     const totalComJuros = dados.valorParcela * dados.numParcelas;
 
     elementoPDF.innerHTML = `
-        <div style="border: 2px solid #1a73e8; padding: 20px; border-radius: 10px;">
-            <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
-            <hr>
-            <p><strong>Cliente:</strong> ${dados.cliente}</p>
-            <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
-            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
-            <br>
-            <h3>Resumo:</h3>
-            <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}</strong>.</p>
-            <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}</p>
-            <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
-        </div>
-    `;
+        <div style="border: 2px solid #1a73e8; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
+            <hr>
+            <p><strong>Cliente:</strong> ${dados.cliente}</p>
+            <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
+            <br>
+            <h3>Resumo:</h3>
+            <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</strong>.</p>
+            <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+            <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
+        </div>
+    `;
 
-    const opt = { 
-        margin: 1, 
-        filename: `Recibo_${dados.cliente}.pdf`, 
-        image: { type: 'jpeg', quality: 0.98 }, 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
+    const opt = {
+        margin: 1,
+        filename: `Recibo_${dados.cliente}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
     // Tenta gerar o PDF
@@ -340,3 +348,65 @@ btnFecharModal.onclick = () => { modal.style.display = 'none'; };
 
 atualizarDisplaySaldo();
 trocarSecao('section-home');
+
+// CRIA UM ITEM NO HISTÓRICO PARA CADA PAGAMENTO FEITO
+function registrarNoHistorico(cliente, qtd, valor, quitado) {
+    if (listaHistorico.querySelector('p')) listaHistorico.innerHTML = '';
+
+    const item = document.createElement('div');
+    // Usamos a classe card-pagamento para manter o estilo, mas com ajustes
+    item.className = 'card-pagamento card-historico animar-entrada';
+    item.style.opacity = "1";
+    item.style.filter = "none";
+    item.style.cursor = "default";
+
+    item.innerHTML = `
+        <div class="pagamento-dados">
+            <span class="pg-cliente">${cliente}</span>
+            <span class="pg-valor" style="color:var(--corSucesso)">+ ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span>
+        </div>
+        <div class="pagamento-detalhes">
+            <span class="pago-status" style="background:${quitado ? '#d1e7dd' : '#fff3cd'}">
+                ${quitado ? 'QUITAÇÃO' : 'PARCELA'}
+            </span>
+            <span style="font-size:0.7em; color:#666; margin-top:4px;">
+                ${new Date().toLocaleDateString()} - ${qtd}x parc.
+            </span>
+        </div>
+    `;
+    listaHistorico.prepend(item);
+}
+
+// GERA O PDF ESPECÍFICO DE RECEBIMENTO
+function gerarReciboPagamentoPDF(cliente, qtd, valor, restantes) {
+    if (typeof html2pdf === 'undefined') return;
+
+    const elemento = document.createElement('div');
+    elemento.style.padding = "40px";
+    elemento.style.fontFamily = "Arial, sans-serif";
+
+    elemento.innerHTML = `
+        <div style="border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
+            <hr>
+            <p><strong>Recebemos de:</strong> ${cliente}</p>
+            <p><strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+            <p><strong>Referente a:</strong> ${qtd} parcela(s)</p>
+            <p><strong>Data:</strong> ${new Date().toLocaleString('pt-br')}</p>
+            <br>
+            <div style="background: #f8f9fa; padding: 15px; text-align: center; border-radius: 5px;">
+                <strong>${restantes > 0 ? `Ainda restam ${restantes} parcelas para este empréstimo.` : "Empréstimo TOTALMENTE QUITADO. Obrigado!"}</strong>
+            </div>
+        </div>
+    `;
+
+    const opt = {
+        margin: 1,
+        filename: `Recibo_Pagamento_${cliente}_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(elemento).save();
+}

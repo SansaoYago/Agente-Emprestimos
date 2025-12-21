@@ -39,6 +39,11 @@
                 Visualizar Lucros
             </button>
 
+            <button onclick="abrirOpcaoConfig('section-blacklist')" class="botao-opcao-modal"
+                style="width: 100%; padding: 14px; background: #f1f3f4; border: 1px solid var(--corErro); color: var(--corErro); border-radius: 12px; font-weight: bold; cursor: pointer;">
+                Gerenciar Black List
+            </button>
+
             <button id="btn-fechar-gestao"
                 style="background:none; border:none; color:var(--corErro); font-size: 0.9em; cursor:pointer; margin-top: 5px;">Fechar</button>
         </div>
@@ -130,6 +135,19 @@
 
                 <button onclick="botoesMenu[0].click()"
                     style="background:none; border:none; color:var(--corPrimaria); margin-top:10px; cursor:pointer;">Voltar</button>
+            </section>
+
+            <section id="section-blacklist" class="content-section" style="display: none;">
+                <h2>Black List</h2>
+                <p style="font-size: 0.8em; color: #666; text-align: center; margin-bottom: 15px;">Clientes bloqueados
+                    para novos empréstimos.</p>
+
+                <div id="lista-negativados" style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                </div>
+
+                <button onclick="botoesMenu[0].click()"
+                    style="background:none; border:none; color:var(--corPrimaria); margin-top:20px; cursor:pointer; font-weight:bold;">Voltar
+                    para Home</button>
             </section>
         </main>
 

@@ -217,3 +217,26 @@ main {
 #modal-validacao {
     z-index: 3000 !important;
 }
+
+/* 9. AJUSTES DINÂMICOS (BLACKLIST) */
+#container-exclusao {
+    animation: subir 0.3s ease-out;
+}
+
+#check-blacklist {
+    accent-color: var(--corErro); /* Deixa a cor do "check" vermelha */
+    transform: scale(1.2); /* Facilita o toque no mobile */
+}
+
+#container-exclusao label:active {
+    background-color: #fff0f0; /* Feedback visual ao tocar no label */
+    border-radius: 8px;
+}
+
+#btn-excluir-emprestimo {
+    transition: color 0.2s;
+}
+
+#btn-excluir-emprestimo:active {
+    color: var(--corErro) !important;
+}
