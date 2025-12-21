@@ -1,32 +1,5 @@
-// 1. SELEÇÃO DE ELEMENTOS
-const botoesMenu = document.querySelectorAll('footer nav .material-symbols-outlined');
-const btnSalvar = document.getElementById('btn-salvar');
-const listaVencimentos = document.getElementById('lista-vencimentos');
-const listaHistorico = document.getElementById('lista-historico');
-const campoSaldoVisivel = document.querySelector('.valor-capital');
-
-const modal = document.getElementById('modal-pagamento');
-const modalInfo = document.getElementById('modal-info');
-const selectParcelas = document.getElementById('select-qtd-parcelas');
-const btnConfirmarPg = document.getElementById('btn-confirmar-pagamento');
-const btnFecharModal = document.getElementById('btn-fechar-modal');
-
-const menuGestao = document.getElementById('menu-gestao-flutuante');
-const blurOverlay = document.getElementById('blur-overlay');
-const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
-
-const modalValidacao = document.getElementById('modal-validacao');
-const inputCodigo = document.getElementById('input-codigo-recebido');
-
-// VARIÁVEIS DE ESTADO
-let lucroTotal = 0.00;
-let cardEmEdicao = null;
-let dadosEmEdicao = null;
-let saldoGlobal = 5000;
-let taxaJurosGlobal = 1.30;
-let codigoGeradoLocal = null;
-let dadosTemporarios = null;
-let listaNegativadosGlobal = [];
+// Arquivo sobrescrito: lógica original movida para `js/main.js` e versão legado em `js/script.legacy.js`.
+// Este arquivo foi deixado vazio para evitar conflitos de escopo ao carregar módulos.
 
 // 2. UTILITÁRIOS E NAVEGAÇÃO
 function atualizarDisplaySaldo() {
