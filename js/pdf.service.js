@@ -87,44 +87,62 @@ function _renderPdf(element, filename) {
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    // Antes de gerar, tente carregar o CSS do template `pdf.css` e injetar no elemento
-    // para que o PDF herde o mesmo estilo do `pdf.html`.
-    fetch('pdf.css').then(resp => {
-        if (!resp.ok) return '';
-        return resp.text();
-    }).then(cssText => {
-        try {
-            // Remove estilo anterior se existir
-            const existing = element.querySelector('style[data-pdf-css]');
-            if (existing) existing.remove();
-            const style = document.createElement('style');
-            style.setAttribute('data-pdf-css', '');
-            style.textContent = cssText || '';
-            // Inserir no topo do elemento para aplicar o CSS
-            element.insertBefore(style, element.firstChild);
+        // Antes de gerar, anexa o elemento ao DOM temporariamente, injeta o CSS e gera o PDF.
+        // Isso evita que html2pdf trave quando o elemento não está colocado no documento.
+        const prepareAndRender = async () => {
+            let cssText = '';
+            try {
+                const resp = await fetch('pdf.css');
+                if (resp.ok) cssText = await resp.text();
+            } catch (e) {
+                console.warn('Falha ao carregar pdf.css:', e);
+            }
 
-            html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-                html2pdf().set(opt).from(element).save();
-                setTimeout(() => URL.revokeObjectURL(url), 10000);
-            });
-        } catch (err) {
-            console.error('Erro ao gerar PDF:', err);
-        }
-    }).catch(e => {
-        console.warn('Não foi possível carregar pdf.css, gerando sem estilo externo.', e);
-        try {
-            html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-                html2pdf().set(opt).from(element).save();
-                setTimeout(() => URL.revokeObjectURL(url), 10000);
-            });
-        } catch (err) {
-            console.error('Erro ao gerar PDF:', err);
-        }
-    });
+            // container oculto fora da viewport para renderização
+            const container = document.createElement('div');
+            container.setAttribute('aria-hidden', 'true');
+            container.style.position = 'fixed';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = '8.5in';
+            container.style.height = '11in';
+            container.style.overflow = 'hidden';
+
+            // anexar o elemento ao container
+            container.appendChild(element);
+
+            // injetar CSS se disponível
+            if (cssText) {
+                const existing = element.querySelector('style[data-pdf-css]');
+                if (existing) existing.remove();
+                const style = document.createElement('style');
+                style.setAttribute('data-pdf-css', '');
+                style.textContent = cssText;
+                element.insertBefore(style, element.firstChild);
+            }
+
+            document.body.appendChild(container);
+
+            const cleanup = () => {
+                try { if (container && container.parentNode) container.parentNode.removeChild(container); } catch (e) { /* ignore */ }
+            };
+
+            try {
+                await html2pdf().set(opt).from(container).toPdf().output('blob').then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    html2pdf().set(opt).from(container).save();
+                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                });
+            } catch (err) {
+                console.error('Erro ao gerar PDF:', err);
+            } finally {
+                cleanup();
+            }
+        };
+
+        // executa a rotina
+        prepareAndRender();
 }
 
 export function gerarDocumento(tipo, payload) {
