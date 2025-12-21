@@ -1,7 +1,7 @@
 // Template unificado parametrizado para documentos PDF
 function _buildElementFor(type, payload) {
     const el = document.createElement('div');
-    el.style.padding = '40px';
+    el.style.padding = '0';
     el.style.fontFamily = 'Arial, sans-serif';
 
     if (type === 'emprestimo') {
@@ -58,7 +58,7 @@ function _renderPdf(element, filename) {
         return;
     }
     const opt = {
-        margin: 1,
+        margin: 0,
         filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
