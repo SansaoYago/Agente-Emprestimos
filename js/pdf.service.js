@@ -8,17 +8,19 @@ function _buildElementFor(type, payload) {
         const dados = payload;
         const totalComJuros = dados.valorParcela * dados.numParcelas;
         el.innerHTML = `
-            <div style="padding: 20px; border-radius: 10px; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
-                <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
-                <hr>
-                <p><strong>Cliente:</strong> ${dados.cliente}</p>
-                <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
-                <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
-                <br>
-                <h3>Resumo:</h3>
-                <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</strong>.</p>
-                <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-                <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
+            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
+                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
+                    <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
+                    <hr>
+                    <p><strong>Cliente:</strong> ${dados.cliente}</p>
+                    <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+                    <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
+                    <br>
+                    <h3>Resumo:</h3>
+                    <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</strong>.</p>
+                    <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+                    <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
+                </div>
             </div>
         `;
         return { element: el, filename: `Recibo_${dados.cliente}_emprestimo.pdf` };
@@ -27,16 +29,18 @@ function _buildElementFor(type, payload) {
     if (type === 'pagamento') {
         const { cliente, qtd, valor, restantes } = payload;
         el.innerHTML = `
-            <div style="padding: 20px; border-radius: 10px; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
-                <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
-                <hr>
-                <p><strong>Recebemos de:</strong> ${cliente}</p>
-                <p><strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-                <p><strong>Referente a:</strong> ${qtd} parcela(s)</p>
-                <p><strong>Data:</strong> ${new Date().toLocaleString('pt-br')}</p>
-                <br>
-                <div style="background: #f8f9fa; padding: 15px; text-align: center; border-radius: 5px;">
-                    <strong>${restantes > 0 ? `Ainda restam ${restantes} parcelas para este empréstimo.` : "Empréstimo TOTALMENTE QUITADO. Obrigado!"}</strong>
+            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
+                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
+                    <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
+                    <hr>
+                    <p><strong>Recebemos de:</strong> ${cliente}</p>
+                    <p><strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+                    <p><strong>Referente a:</strong> ${qtd} parcela(s)</p>
+                    <p><strong>Data:</strong> ${new Date().toLocaleString('pt-br')}</p>
+                    <br>
+                    <div style="background: rgba(248,249,250,0.8); padding: 15px; text-align: center; border-radius: 5px;">
+                        <strong>${restantes > 0 ? `Ainda restam ${restantes} parcelas para este empréstimo.` : "Empréstimo TOTALMENTE QUITADO. Obrigado!"}</strong>
+                    </div>
                 </div>
             </div>
         `;
