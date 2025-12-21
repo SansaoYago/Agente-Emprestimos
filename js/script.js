@@ -410,3 +410,19 @@ function gerarReciboPagamentoPDF(cliente, qtd, valor, restantes) {
 
     html2pdf().set(opt).from(elemento).save();
 }
+
+// --- SCRIPT DE LIMPEZA SEGURA (ADICIONAL) ---
+// Limpa o campo de capital ao clicar em Inserir ou Retirar
+const limparCapital = () => {
+    setTimeout(() => {
+        const campo = document.getElementById('input-movimentar-valor');
+        if (campo) campo.value = '';
+    }, 100); // Aguarda 100ms para garantir que a conta foi feita antes de limpar
+};
+
+if(document.getElementById('btn-inserir-capital')) {
+    document.getElementById('btn-inserir-capital').addEventListener('click', limparCapital);
+}
+if(document.getElementById('btn-retirar-capital')) {
+    document.getElementById('btn-retirar-capital').addEventListener('click', limparCapital);
+}
