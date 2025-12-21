@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="pdf.css">
 </head>
 <body>
-    <div class="controls">
-        <button id="btn-export">Exportar PDF</button>
-        <button id="btn-print">Imprimir</button>
-    </div>
 
     <main class="page" id="page-sample">
         <header class="pdf-header">
@@ -47,20 +43,8 @@
         </section>
 
         <footer class="pdf-footer">
-            <div>Assinatura: ____________________________</div>
-            <div class="small">Documento gerado para testes — ajustes visuais podem ser aplicados via `pdf.css`</div>
+            <div class="assinatura">ASSINATURA VIA API</div>
         </footer>
     </main>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        document.getElementById('btn-export').addEventListener('click', () => {
-            const el = document.getElementById('page-sample');
-            const opt = { margin: 0, filename: 'recibo_teste.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
-            if (typeof html2pdf !== 'undefined') html2pdf().set(opt).from(el).save(); else alert('html2pdf não carregado.');
-        });
-
-        document.getElementById('btn-print').addEventListener('click', () => window.print());
-    </script>
 </body>
 </html>
