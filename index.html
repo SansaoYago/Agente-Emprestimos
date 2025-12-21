@@ -68,6 +68,10 @@
                     <input type="text" id="input-cliente" placeholder="Nome completo">
                 </div>
                 <div class="form-group">
+                    <label>WhatsApp (com DDD)</label>
+                    <input type="tel" id="input-whatsapp" placeholder="Ex: 11999999999">
+                </div>
+                <div class="form-group">
                     <label>Valor Solicitado (R$)</label>
                     <input type="number" id="input-valor" placeholder="0.00" step="0.01">
                 </div>
@@ -79,7 +83,7 @@
                     <label>Data de Vencimento</label>
                     <input type="date" id="input-data">
                 </div>
-                <button id="btn-salvar" class="botao-sucesso">Salvar Empréstimo</button>
+                <button id="btn-salvar" class="botao-sucesso">Validar e Salvar</button>
             </section>
 
             <section id="section-config" class="content-section" style="display: none;">
@@ -157,6 +161,21 @@
         </div>
     </div>
 
+    <div id="modal-validacao"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div
+            style="background: white; width: 90%; max-width: 350px; padding: 25px; border-radius: 20px; text-align: center;">
+            <h3 style="color: var(--corPrimaria); margin-bottom: 10px;">Validar Contato</h3>
+            <p id="msg-validacao-whatsapp" style="font-size: 0.85em; color: #666; margin-bottom: 20px;"></p>
+            <input type="number" id="input-codigo-recebido" placeholder="000"
+                style="width: 100%; padding: 15px; font-size: 1.8em; text-align: center; border: 2px solid var(--corPrimaria); border-radius: 12px; margin-bottom: 20px; letter-spacing: 10px;">
+            <button id="btn-confirmar-codigo" class="botao-sucesso">Confirmar Cadastro</button>
+            <button id="btn-cancelar-validacao"
+                style="background: none; border: none; color: var(--corErro); margin-top: 15px; cursor: pointer; font-size: 0.9em;">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 

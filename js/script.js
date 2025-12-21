@@ -15,29 +15,28 @@ const menuGestao = document.getElementById('menu-gestao-flutuante');
 const blurOverlay = document.getElementById('blur-overlay');
 const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
 
+const modalValidacao = document.getElementById('modal-validacao');
+const inputCodigo = document.getElementById('input-codigo-recebido');
+
 // VARIÁVEIS DE ESTADO
 let lucroTotal = 0.00; 
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
 let saldoGlobal = 0;
-let taxaJurosGlobal = 1.30; // Representa 30%
+let taxaJurosGlobal = 1.30; 
+let codigoGeradoLocal = null;
+let dadosTemporarios = null;
 
 // 2. UTILITÁRIOS E NAVEGAÇÃO
 function atualizarDisplaySaldo() {
     campoSaldoVisivel.textContent = saldoGlobal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-    
     const campoLucro = document.getElementById('valor-lucro-acumulado');
-    if (campoLucro) {
-        campoLucro.textContent = lucroTotal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-    }
+    if (campoLucro) campoLucro.textContent = lucroTotal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
 }
 
 function trocarSecao(idAlvo) {
     fecharMenuGestao(); 
-    
-    const todasAsSeccoes = document.querySelectorAll('.content-section');
-    todasAsSeccoes.forEach(sec => sec.style.display = 'none');
-    
+    document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
     const seccaoAtiva = document.getElementById(idAlvo);
     if (seccaoAtiva) {
         seccaoAtiva.style.display = 'flex';
@@ -47,7 +46,6 @@ function trocarSecao(idAlvo) {
     }
 }
 
-// GESTÃO DO MENU FLUTUANTE
 function fecharMenuGestao() {
     if(menuGestao) {
         menuGestao.style.display = 'none';
@@ -64,7 +62,6 @@ document.getElementById('btn-config-topo').onclick = () => {
     }
 };
 
-// Vincula o botão "Fechar" de dentro do menu
 if(btnFecharMenuGestao) btnFecharMenuGestao.onclick = fecharMenuGestao;
 if(blurOverlay) blurOverlay.onclick = fecharMenuGestao;
 
@@ -94,7 +91,6 @@ function abrirModal(card, dados) {
     const parcelaAtualNoCard = parseInt(spanParc.textContent.split(':')[1].trim().split('/')[0]);
     const parcelasRestantes = (dados.numParcelas - parcelaAtualNoCard) + 1;
 
-    // Gerenciar Display de Total no Modal
     let displayTotal = document.getElementById('display-total-modal');
     if (!displayTotal) {
         displayTotal = document.createElement('div');
@@ -103,7 +99,6 @@ function abrirModal(card, dados) {
         btnConfirmarPg.parentNode.insertBefore(displayTotal, btnConfirmarPg);
     }
 
-    // Gerenciar Botão Excluir no Modal
     let btnExcluir = document.getElementById('btn-excluir-emprestimo');
     if (!btnExcluir) {
         btnExcluir = document.createElement('button');
@@ -150,7 +145,6 @@ btnConfirmarPg.onclick = () => {
     
     lucroTotal += lucroDestaOperacao;
     saldoGlobal += valorRecebido;
-    
     atualizarDisplaySaldo();
 
     const novaParcelaIndice = parcelaAtual + qtdSelecionada;
@@ -163,7 +157,7 @@ btnConfirmarPg.onclick = () => {
 };
 
 function finalizarCard(card) {
-    card.classList.remove('no-prazo');
+    card.classList.remove('no-prazo', 'em-atraso');
     card.classList.add('card-historico');
     card.onclick = null;
     const detalhes = card.querySelector('.pagamento-detalhes');
@@ -172,45 +166,157 @@ function finalizarCard(card) {
     listaHistorico.prepend(card);
 }
 
-// 5. SALVAR NOVO EMPRÉSTIMO
+// 5. SALVAR COM VALIDAÇÃO WHATSAPP E TRAVAS DE SEGURANÇA
 btnSalvar.onclick = () => {
     const cliente = document.getElementById('input-cliente').value;
+    const whatsapp = document.getElementById('input-whatsapp').value;
     const valor = parseFloat(document.getElementById('input-valor').value);
     const dataInput = document.getElementById('input-data').value;
     const parcelas = parseInt(document.getElementById('input-parcelas').value) || 1;
 
-    if (!cliente || isNaN(valor) || !dataInput) return alert("Preencha todos os campos!");
-    if (valor > saldoGlobal) return alert("Saldo insuficiente.");
-    if (parcelas > 3) return alert("O limite máximo é de 3 parcelas.");
+    // A. Validação de Campos Vazios
+    if (!cliente || !whatsapp || isNaN(valor) || !dataInput) {
+        return alert("Preencha todos os campos!");
+    }
 
-    saldoGlobal -= valor;
+    // B. Validação de Data (IMPEDE DATAS RETROATIVAS)
+    const dataHoje = new Date().toISOString().split('T')[0];
+    if (dataInput < dataHoje) {
+        return alert("Erro: O vencimento não pode ser uma data que já passou.");
+    }
+
+    // C. Validação de Saldo
+    if (valor > saldoGlobal) {
+        return alert("Saldo insuficiente no capital disponível.");
+    }
+    
+    // D. Preparação para o WhatsApp
+    codigoGeradoLocal = Math.floor(100 + Math.random() * 900);
+    const valorTotalComJuros = valor * taxaJurosGlobal;
+    const valorParcela = valorTotalComJuros / parcelas;
+    
+    dadosTemporarios = { cliente, whatsapp, valor, valorParcela, parcelas, dataInput };
+
+    const msg = `Olá ${cliente}, para validar seu empréstimo de R$ ${valor.toFixed(2)}, informe este código: *${codigoGeradoLocal}*\n\n` +
+                `*DETALHES:* ${parcelas}x de R$ ${valorParcela.toFixed(2)} | Total: R$ ${valorTotalComJuros.toFixed(2)}`;
+
+    // Abre o WhatsApp
+    window.open(`https://wa.me/55${whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+    
+    // Mostra o Modal de Validação
+    document.getElementById('msg-validacao-whatsapp').innerHTML = `Enviamos um código para o WhatsApp de <b>${cliente}</b>.<br>Peça ao cliente e digite abaixo:`;
+    modalValidacao.style.display = 'flex';
+    inputCodigo.value = '';
+    inputCodigo.focus();
+};
+
+// CONFIRMAÇÃO DO CÓDIGO (Continua igual, garantindo o funcionamento)
+document.getElementById('btn-confirmar-codigo').onclick = () => {
+    if (inputCodigo.value == codigoGeradoLocal) {
+        processarSalvamento(dadosTemporarios);
+        modalValidacao.style.display = 'none';
+    } else {
+        alert("Código incorreto!");
+    }
+};
+
+// BOTÃO CANCELAR
+document.getElementById('btn-cancelar-validacao').onclick = () => {
+    modalValidacao.style.display = 'none';
+};
+
+// PROCESSAMENTO FINAL (Onde o card é criado)
+function processarSalvamento(d) {
+    saldoGlobal -= d.valor;
     atualizarDisplaySaldo();
 
-    const valorParcela = (valor * taxaJurosGlobal) / parcelas;
-    const dados = { cliente, valorParcela, numParcelas: parcelas };
+    // Como bloqueamos data retroativa no início, aqui ele será sempre 'no-prazo'
+    // Mas mantemos a lógica por segurança caso você mude a regra no futuro
+    const dataHoje = new Date().toISOString().split('T')[0];
+    const isAtrasado = d.dataInput < dataHoje;
+    const classeStatus = isAtrasado ? 'em-atraso' : 'no-prazo';
 
     const novoCard = document.createElement('div');
-    novoCard.className = 'card-pagamento no-prazo animar-entrada';
-    novoCard.onclick = () => abrirModal(novoCard, dados);
+    novoCard.className = `card-pagamento ${classeStatus} animar-entrada`;
+    
+    const dadosCard = { 
+        cliente: d.cliente, 
+        valorParcela: d.valorParcela, 
+        numParcelas: d.parcelas, 
+        whatsapp: d.whatsapp,
+        dataVencimento: d.dataInput 
+    };
+    
+    novoCard.onclick = () => abrirModal(novoCard, dadosCard);
 
     novoCard.innerHTML = `
         <div class="pagamento-dados">
-            <span class="pg-cliente">${cliente}</span>
-            <span class="pg-valor">${valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${parcelas})</small></span>
+            <span class="pg-cliente">${d.cliente}</span>
+            <span class="pg-valor">${d.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${d.parcelas})</small></span>
         </div>
         <div class="pagamento-detalhes">
-            <span class="pg-data">Venc: ${dataInput.split('-').reverse().slice(0, 2).join('/')}</span>
-            <span class="pg-parcela">Parc: 1/${parcelas}</span>
+            <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
+                Venc: ${d.dataInput.split('-').reverse().slice(0, 2).join('/')}
+            </span>
+            <span class="pg-parcela">Parc: 1/${d.parcelas}</span>
         </div>
     `;
 
     listaVencimentos.appendChild(novoCard);
+    gerarComprovantePDF(dadosCard); 
+
+    // Limpa o formulário
     document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
     document.getElementById('input-parcelas').value = '1';
-    botoesMenu[0].click();
-};
+    botoesMenu[0].click(); // Volta para a Home
+}
 
-// 6. NAVEGAÇÃO DO RODAPÉ
+// 6. GERADOR DE PDF
+function gerarComprovantePDF(dados) {
+    // PROTEÇÃO: Verifica se a biblioteca html2pdf foi carregada no index.html
+    if (typeof html2pdf === 'undefined') {
+        console.error("Biblioteca html2pdf não encontrada. Verifique o link no seu HTML.");
+        alert("Empréstimo salvo com sucesso! (Apenas o recibo em PDF não pôde ser gerado pois a biblioteca não foi carregada).");
+        return; // Sai da função sem travar o sistema
+    }
+
+    const elementoPDF = document.createElement('div');
+    elementoPDF.style.padding = "40px";
+    elementoPDF.style.fontFamily = "Arial, sans-serif";
+    const totalComJuros = dados.valorParcela * dados.numParcelas;
+
+    elementoPDF.innerHTML = `
+        <div style="border: 2px solid #1a73e8; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
+            <hr>
+            <p><strong>Cliente:</strong> ${dados.cliente}</p>
+            <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
+            <br>
+            <h3>Resumo:</h3>
+            <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}</strong>.</p>
+            <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}</p>
+            <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
+        </div>
+    `;
+
+    const opt = { 
+        margin: 1, 
+        filename: `Recibo_${dados.cliente}.pdf`, 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
+    };
+
+    // Tenta gerar o PDF
+    try {
+        html2pdf().set(opt).from(elementoPDF).save();
+    } catch (err) {
+        console.error("Erro ao gerar PDF:", err);
+    }
+}
+
+// 7. NAVEGAÇÃO E INICIALIZAÇÃO
 botoesMenu.forEach((btn, i) => {
     btn.onclick = () => {
         const ids = ['section-home', 'section-history', 'section-cadastro'];
@@ -220,7 +326,6 @@ botoesMenu.forEach((btn, i) => {
     };
 });
 
-// MOVIMENTAÇÃO DE CAPITAL
 document.getElementById('btn-inserir-capital').onclick = () => {
     const v = parseFloat(document.getElementById('input-movimentar-valor').value);
     if (v > 0) { saldoGlobal += v; atualizarDisplaySaldo(); botoesMenu[0].click(); }
@@ -233,6 +338,5 @@ document.getElementById('btn-retirar-capital').onclick = () => {
 document.getElementById('btn-voltar-home').onclick = () => botoesMenu[0].click();
 btnFecharModal.onclick = () => { modal.style.display = 'none'; };
 
-// INICIALIZAÇÃO
 atualizarDisplaySaldo();
 trocarSecao('section-home');
