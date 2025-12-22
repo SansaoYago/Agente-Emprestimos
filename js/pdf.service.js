@@ -8,34 +8,19 @@ function _buildElementFor(type, payload) {
         const dados = payload;
         const totalComJuros = dados.valorParcela * dados.numParcelas;
         el.innerHTML = `
-            <div class="page" style="box-sizing:border-box;">
-                <header class="pdf-header">
-                    <div class="logo">Agente Empréstimos</div>
-                    <div class="doc-title">COMPROVANTE DE EMPRÉSTIMO</div>
-                </header>
-                <section class="client-info">
-                    <div><strong>Cliente:</strong> ${dados.cliente}</div>
-                    <div><strong>WhatsApp:</strong> ${dados.whatsapp}</div>
-                    <div><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</div>
-                </section>
-                <section class="summary">
-                    <h3>Resumo</h3>
-                    <div class="row"><span>Valor solicitado</span><span class="value">${dados.valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
-                    <div class="row"><span>Juros</span><span class="value">${((dados.valorParcela * dados.numParcelas - dados.valor) / dados.valor * 100).toFixed(0)}%</span></div>
-                    <div class="row"><span>Parcelas</span><span class="value">${dados.numParcelas}x</span></div>
-                    <div class="row total"><span>Total</span><span class="value">${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
-                </section>
-                <section class="installments">
-                    <h3>Parcelas</h3>
-                    <table>
-                        <thead><tr><th>Parcela</th><th>Vencimento</th><th>Valor</th></tr></thead>
-                        <tbody>
-                            <!-- apenas um resumo: 1ª parcela com data fornecida -->
-                            <tr><td>1/${dados.numParcelas}</td><td>${dados.dataVencimento.split('-').reverse().join('/')}</td><td>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</td></tr>
-                        </tbody>
-                    </table>
-                </section>
-                <footer class="pdf-footer"><div class="assinatura">ASSINATURA</div></footer>
+            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
+                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
+                    <h1 style="color: #1a73e8; text-align: center;">COMPROVANTE DE EMPRÉSTIMO</h1>
+                    <hr>
+                    <p><strong>Cliente:</strong> ${dados.cliente}</p>
+                    <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+                    <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</p>
+                    <br>
+                    <h3>Resumo:</h3>
+                    <p><strong>${dados.numParcelas}x</strong> de <strong>${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</strong>.</p>
+                    <p><strong>Total:</strong> ${totalComJuros.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+                    <p><strong>1º Vencimento:</strong> ${dados.dataVencimento.split('-').reverse().join('/')}</p>
+                </div>
             </div>
         `;
         return { element: el, filename: `Recibo_${dados.cliente}_emprestimo.pdf` };
@@ -44,26 +29,19 @@ function _buildElementFor(type, payload) {
     if (type === 'pagamento') {
         const { cliente, qtd, valor, restantes } = payload;
         el.innerHTML = `
-            <div class="page" style="box-sizing:border-box;">
-                <header class="pdf-header">
-                    <div class="logo">Agente Empréstimos</div>
-                    <div class="doc-title">RECIBO DE PAGAMENTO</div>
-                </header>
-                <section class="client-info">
-                    <div><strong>Recebemos de:</strong> ${cliente}</div>
-                    <div><strong>Data:</strong> ${new Date().toLocaleDateString('pt-br')}</div>
-                </section>
-                <section class="summary">
-                    <h3>Detalhes</h3>
-                    <div class="row"><span>Valor Pago</span><span class="value">${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</span></div>
-                    <div class="row total"><span>Parcelas</span><span class="value">${qtd}x</span></div>
-                </section>
-                <section class="installments">
+            <div style="width:8.5in; height:11in; box-sizing:border-box; background-image: url('img/background-pdf.jpg'); background-size: cover; background-position: center;">
+                <div style="padding: 40px; border-radius: 10px; background: rgba(255,255,255,0.0); box-sizing: border-box; width:100%; height:100%;">
+                    <h1 style="color: #28a745; text-align: center;">RECIBO DE PAGAMENTO</h1>
+                    <hr>
+                    <p><strong>Recebemos de:</strong> ${cliente}</p>
+                    <p><strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+                    <p><strong>Referente a:</strong> ${qtd} parcela(s)</p>
+                    <p><strong>Data:</strong> ${new Date().toLocaleString('pt-br')}</p>
+                    <br>
                     <div style="background: rgba(248,249,250,0.8); padding: 15px; text-align: center; border-radius: 5px;">
                         <strong>${restantes > 0 ? `Ainda restam ${restantes} parcelas para este empréstimo.` : "Empréstimo TOTALMENTE QUITADO. Obrigado!"}</strong>
                     </div>
-                </section>
-                <footer class="pdf-footer"><div class="assinatura">ASSINATURA</div></footer>
+                </div>
             </div>
         `;
         return { element: el, filename: `Recibo_Pagamento_${cliente}_${Date.now()}.pdf` };
@@ -87,62 +65,16 @@ function _renderPdf(element, filename) {
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-        // Antes de gerar, anexa o elemento ao DOM temporariamente, injeta o CSS e gera o PDF.
-        // Isso evita que html2pdf trave quando o elemento não está colocado no documento.
-        const prepareAndRender = async () => {
-            let cssText = '';
-            try {
-                const resp = await fetch('pdf.css');
-                if (resp.ok) cssText = await resp.text();
-            } catch (e) {
-                console.warn('Falha ao carregar pdf.css:', e);
-            }
-
-            // container oculto fora da viewport para renderização
-            const container = document.createElement('div');
-            container.setAttribute('aria-hidden', 'true');
-            container.style.position = 'fixed';
-            container.style.left = '-9999px';
-            container.style.top = '0';
-            container.style.width = '8.5in';
-            container.style.height = '11in';
-            container.style.overflow = 'hidden';
-
-            // anexar o elemento ao container
-            container.appendChild(element);
-
-            // injetar CSS se disponível
-            if (cssText) {
-                const existing = element.querySelector('style[data-pdf-css]');
-                if (existing) existing.remove();
-                const style = document.createElement('style');
-                style.setAttribute('data-pdf-css', '');
-                style.textContent = cssText;
-                element.insertBefore(style, element.firstChild);
-            }
-
-            document.body.appendChild(container);
-
-            const cleanup = () => {
-                try { if (container && container.parentNode) container.parentNode.removeChild(container); } catch (e) { /* ignore */ }
-            };
-
-            try {
-                await html2pdf().set(opt).from(container).toPdf().output('blob').then((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                    html2pdf().set(opt).from(container).save();
-                    setTimeout(() => URL.revokeObjectURL(url), 10000);
-                });
-            } catch (err) {
-                console.error('Erro ao gerar PDF:', err);
-            } finally {
-                cleanup();
-            }
-        };
-
-        // executa a rotina
-        prepareAndRender();
+    try {
+        html2pdf().set(opt).from(element).toPdf().output('blob').then((blob) => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            html2pdf().set(opt).from(element).save();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+        });
+    } catch (err) {
+        console.error('Erro ao gerar PDF:', err);
+    }
 }
 
 export function gerarDocumento(tipo, payload) {
