@@ -268,7 +268,8 @@ function processarSalvamento(d) {
         valorParcela: d.valorParcela,
         numParcelas: d.parcelas,
         whatsapp: d.whatsapp,
-        dataVencimento: d.dataInput
+        dataVencimento: d.dataInput,
+        valorTotal: d.valor
     };
 
     novoCard.onclick = () => abrirModal(novoCard, dadosCard);
