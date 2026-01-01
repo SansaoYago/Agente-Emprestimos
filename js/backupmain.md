@@ -1,11 +1,6 @@
 import { supabase } from './supabase-client.js';
 import { monitorarAutenticacao, sairDoSistema } from './auth.js';
-import {
-    atualizarDisplaySaldo, addSaldo, subSaldo, addLucro, taxaJurosGlobal,
-    setTaxaPercentual, isNegativado, saldoGlobal, emprestimosAtivos,
-    adicionarMeses, calcularDiasAtraso, calcularValorComJuros,
-    setTaxaAtrasoPercentual, setSaldoGlobal, setLucroTotal, lucroTotal
-} from './app-state.js';
+import { atualizarDisplaySaldo, addSaldo, subSaldo, addLucro, taxaJurosGlobal, setTaxaPercentual, isNegativado, saldoGlobal, emprestimosAtivos, adicionarMeses, calcularDiasAtraso, calcularValorComJuros, setTaxaAtrasoPercentual } from './app-state.js';
 import { gerarComprovantePDF, gerarReciboPagamentoPDF } from './pdf.service.js';
 import { adicionarABlackList } from './blacklist.js';
 
@@ -32,45 +27,6 @@ const inputCodigo = document.getElementById('input-codigo-recebido');
 // Estado local
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
-
-// Função para salvar saldo e lucro permanentemente no Supabase
-// 1. Função base para dar Update na tabela de configurações
-async function sincronizarFinanceiroComBanco() {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Atualiza o saldo e o lucro na linha do usuário logado
-        const { error } = await supabase.from('configuracoes').update({
-            saldo_global: saldoGlobal,
-            lucro_total: lucroTotal
-        }).eq('user_id', user.id);
-
-        if (error) throw error;
-    } catch (err) {
-        console.error("Erro ao sincronizar financeiro:", err);
-    }
-}
-
-/**
- * 2. INTERCEPTORES "SAFE"
- * Substitua o uso direto de addSaldo/subSaldo/addLucro por estas 
- * versões para garantir que o banco de dados seja atualizado.
- */
-const safeAddSaldo = (v) => {
-    addSaldo(v);
-    sincronizarFinanceiroComBanco();
-};
-
-const safeSubSaldo = (v) => {
-    subSaldo(v);
-    sincronizarFinanceiroComBanco();
-};
-
-const safeAddLucro = (v) => {
-    addLucro(v);
-    sincronizarFinanceiroComBanco();
-};
 
 function trocarSecao(idAlvo) {
     fecharMenuGestao();
@@ -248,7 +204,7 @@ function abrirModal(card, dados) {
     modal.style.display = 'flex';
 }
 
-btnConfirmarPg.onclick = async () => {
+btnConfirmarPg.onclick = () => {
     const qtdSelecionada = parseInt(selectParcelas.value);
     const displayTotalEl = document.getElementById('display-total-modal');
 
@@ -266,8 +222,8 @@ btnConfirmarPg.onclick = async () => {
     const lucroTotalTransacao = lucroNormalOperacao + jurosDeAtraso;
 
     // ATUALIZAÇÃO ÚNICA (Corrigindo a duplicidade anterior)
-    safeAddLucro(lucroTotalTransacao);
-    safeAddSaldo(valorComJurosTotal);
+    addLucro(lucroTotalTransacao);
+    addSaldo(valorComJurosTotal);
 
     // 2. Atualiza os dados do empréstimo
     dadosEmEdicao.parcelaAtual += qtdSelecionada;
@@ -305,47 +261,35 @@ btnConfirmarPg.onclick = async () => {
 
 function renderizarListaVencimentos() {
     const listaVencimentos = document.getElementById('lista-vencimentos');
-    if (!listaVencimentos) return; // Segurança contra elemento inexistente
-    listaVencimentos.innerHTML = '';
+    listaVencimentos.innerHTML = ''; // Limpa a lista atual
 
     // ORDENAÇÃO: Mais antigos (atrasados) primeiro
     emprestimosAtivos.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
 
     emprestimosAtivos.forEach(dados => {
-        // --- SEGURANÇA CONTRA VALORES NULOS (Resolve o erro da imagem) ---
-        const valorParcelaValido = parseFloat(dados.valorParcela) || 0;
-        const saldoPendenteValido = parseFloat(dados.valorRestanteParcelaAtual) || valorParcelaValido;
-        // -----------------------------------------------------------------
-
         const dataHoje = new Date().toISOString().split('T')[0];
         const isAtrasado = dados.dataVencimento < dataHoje;
         const classeStatus = isAtrasado ? 'em-atraso' : 'no-prazo';
 
-        // Lógica de Parcial (Mantida exatamente como a sua)
-        const infoParcial = saldoPendenteValido < valorParcelaValido
-            ? `<br><small style="color:var(--corErro)">Falta: R$ ${saldoPendenteValido.toFixed(2)}</small>`
-            : '';
+        const saldoPendente = dados.valorRestanteParcelaAtual || dados.valorParcela;
+        const infoParcial = saldoPendente < dados.valorParcela ? `<br><small style="color:var(--corErro)">Falta: R$ ${saldoPendente.toFixed(2)}</small>` : '';
 
         const novoCard = document.createElement('div');
         novoCard.className = `card-pagamento ${classeStatus}`;
 
-        // Vínculo com o modal (Mantido)
+        // Importante: vincular os dados ao card para o modal
         novoCard.onclick = () => abrirModal(novoCard, dados);
 
         novoCard.innerHTML = `
             <div class="pagamento-dados">
-                <span class="pg-cliente">${dados.cliente || 'Sem Nome'}</span>
-                <span class="pg-valor">
-                    ${valorParcelaValido.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} 
-                    <small>(x${dados.numParcelas || 0})</small>
-                    ${infoParcial}
-                </span>
+                <span class="pg-cliente">${dados.cliente}</span>
+                <span class="pg-valor">${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${dados.numParcelas})</small>${infoParcial}</span>
             </div>
             <div class="pagamento-detalhes">
                 <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
-                    Venc: ${dados.dataVencimento ? dados.dataVencimento.split('-').reverse().slice(0, 2).join('/') : '--/--'}
+                    Venc: ${dados.dataVencimento.split('-').reverse().slice(0, 2).join('/')}
                 </span>
-                <span class="pg-parcela">Parc: ${dados.parcelaAtual || 0}/${dados.numParcelas || 0}</span>
+                <span class="pg-parcela">Parc: ${dados.parcelaAtual}/${dados.numParcelas}</span>
             </div>
         `;
         listaVencimentos.appendChild(novoCard);
@@ -371,7 +315,7 @@ btnAbrirParcial.onclick = () => {
 btnFecharParcial.onclick = () => modalParcial.style.display = 'none';
 
 // Lógica do Pagamento Parcial
-btnConfirmarParcial.onclick = async () => {
+btnConfirmarParcial.onclick = () => {
     const valorPago = parseFloat(inputValorParcial.value);
     const saldoAtualParcela = dadosEmEdicao.valorRestanteParcelaAtual || dadosEmEdicao.valorParcela;
 
@@ -382,8 +326,8 @@ btnConfirmarParcial.onclick = async () => {
     // 1. Processar Financeiro
     const proporcaoJuros = (taxaJurosGlobal - 1) / taxaJurosGlobal;
     const lucroDestaOperacao = valorPago * proporcaoJuros;
-    safeAddLucro(lucroDestaOperacao);
-    safeAddSaldo(valorPago);
+    addLucro(lucroDestaOperacao);
+    addSaldo(valorPago);
 
     // 2. Atualizar Saldo da Parcela
     dadosEmEdicao.valorRestanteParcelaAtual = saldoAtualParcela - valorPago;
@@ -435,50 +379,37 @@ function finalizarCard(card) {
     listaHistorico.prepend(card);
 }
 
+// 1. IMPORTA AS NOVAS FUNÇÕES DE SETTER (Atualize a linha de import do app-state no topo!)
+import { ..., setSaldoGlobal, setLucroTotal } from './app-state.js'; 
+
 // 2. FUNÇÃO PARA CARREGAR SALDO E TAXAS DO BANCO
 async function carregarConfiguracoes() {
     try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // 1. Busca a configuração do usuário logado
+        
         let { data, error } = await supabase
             .from('configuracoes')
             .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .single();
 
-        // 2. Se não existir, criamos o padrão com SALDO 0
-        if (!data) {
-            console.log("Configuração não encontrada, criando padrão...");
+        // Se não existir configuração para este usuário, criamos uma inicial
+        if (error && error.code === 'PGRST116') {
             const { data: novaConfig, error: erroCriar } = await supabase
                 .from('configuracoes')
-                .insert([{
-                    user_id: user.id,
-                    saldo_global: 0, // <--- Aqui garantimos o início zerado
-                    lucro_total: 0,
-                    taxa_juros_padrao: 1.30,
-                    taxa_juros_atraso: 0.001
-                }])
+                .insert([{ user_id: user.id, saldo_global: 5000, lucro_total: 0 }])
                 .select()
                 .single();
-
-            if (erroCriar) throw erroCriar;
             data = novaConfig;
         }
 
-        // 3. Aplica TODOS os valores ao estado da aplicação (Mantendo o que você já tinha)
-        setSaldoGlobal(parseFloat(data.saldo_global));
-        setLucroTotal(parseFloat(data.lucro_total));
-        setTaxaPercentual((data.taxa_juros_padrao - 1) * 100); // Mantido
-        setTaxaAtrasoPercentual(data.taxa_juros_atraso * 100); // Mantido
-
-        // 4. Força a atualização visual logo após carregar
-        atualizarDisplaySaldo();
-
-        console.log("Configurações carregadas com sucesso.");
+        if (data) {
+            setSaldoGlobal(parseFloat(data.saldo_global));
+            setLucroTotal(parseFloat(data.lucro_total));
+            setTaxaPercentual((data.taxa_juros_padrao - 1) * 100);
+            setTaxaAtrasoPercentual(data.taxa_juros_atraso * 100);
+        }
     } catch (err) {
-        console.error("Erro detalhado ao carregar configurações:", err);
+        console.error("Erro ao carregar configurações:", err);
     }
 }
 
@@ -509,10 +440,15 @@ async function carregarDadosDoBanco() {
 }
 
 // 4. INICIALIZAÇÃO DO SISTEMA
+monitorarAutenticacao(async (usuario) => {
+    console.log("Logado como:", usuario.email);
+    
+    // Agora o sistema carrega TUDO do banco ao iniciar
+    await carregarConfiguracoes();
+    await carregarDadosDoBanco();
+});
 
-// Expondo funções para o HTML
-window.abrirOpcaoConfig = abrirOpcaoConfig;
-window.sairDoSistema = sairDoSistema;
+// window.sairDoSistema = sairDoSistema;
 
 // SALVAR COM VALIDAÇÃO WHATSAPP
 btnSalvar.onclick = () => {
@@ -599,7 +535,7 @@ async function processarSalvamento(d) {
         if (error) throw error;
 
         // 4. Se deu certo, atualizamos o saldo localmente
-        safeSubSaldo(d.valor);
+        subSaldo(d.valor);
         atualizarDisplaySaldo();
 
         alert('Empréstimo salvo com sucesso no banco de dados!');
@@ -661,31 +597,14 @@ const btnRetirar = document.getElementById('btn-retirar-capital');
 if (btnInserir) {
     btnInserir.onclick = () => {
         const v = parseFloat(document.getElementById('input-movimentar-valor').value);
-        if (v > 0) {
-            // 1. Atualiza local e sincroniza com Supabase
-            safeAddSaldo(v);
-
-            // 2. Mantém sua lógica original de limpar e voltar para Home
-            document.getElementById('input-movimentar-valor').value = '';
-            if (botoesMenu[0]) botoesMenu[0].click();
-        }
+        if (v > 0) { addSaldo(v); document.getElementById('input-movimentar-valor').value = ''; botoesMenu[0].click(); }
     };
 }
-
 if (btnRetirar) {
     btnRetirar.onclick = () => {
         const v = parseFloat(document.getElementById('input-movimentar-valor').value);
-        if (v > 0 && v <= saldoGlobal) {
-            // 1. Atualiza local e sincroniza com Supabase
-            safeSubSaldo(v);
-
-            // 2. Mantém sua lógica original
-            document.getElementById('input-movimentar-valor').value = '';
-            if (botoesMenu[0]) botoesMenu[0].click();
-        }
-        else if (v > saldoGlobal) {
-            alert('Saldo insuficiente no capital disponível.');
-        }
+        if (v > 0 && v <= saldoGlobal) { subSaldo(v); document.getElementById('input-movimentar-valor').value = ''; botoesMenu[0].click(); }
+        else if (v > saldoGlobal) alert('Saldo insuficiente no capital disponível.');
     };
 }
 
@@ -698,21 +617,13 @@ btnPrivacidade.onclick = () => {
     const estaOculto = valorCapital.classList.contains('ocultar-capital');
     btnPrivacidade.textContent = estaOculto ? 'visibility_off' : 'visibility';
     localStorage.setItem('privacidadeSaldo', estaOculto);
-
-    atualizarDisplaySaldo();
 };
 
 function carregarPreferenciaPrivacidade() {
     const salvoOculto = localStorage.getItem('privacidadeSaldo');
-    
     if (salvoOculto === 'true') {
         valorCapital.classList.add('ocultar-capital');
         btnPrivacidade.textContent = 'visibility_off';
-    } else {
-        // Garante que se o usuário desmarcou a privacidade antes, 
-        // o sistema remova a classe ao recarregar a página.
-        valorCapital.classList.remove('ocultar-capital');
-        btnPrivacidade.textContent = 'visibility';
     }
 }
 
@@ -722,58 +633,44 @@ carregarPreferenciaPrivacidade();
 window.abrirOpcaoConfig = abrirOpcaoConfig;
 window.botoesMenu = botoesMenu;
 
-// Chame a função de teste
-// O sistema só inicia de verdade aqui
-// Localize o final do seu main.js e substitua por este bloco:
-
-monitorarAutenticacao(async (usuario) => {
-    console.log("Monitor de autenticação detectou alteração. Usuário:", usuario ? "Logado" : "Deslogado");
-
-
+async function carregarDadosDoBanco() {
     try {
-        if (usuario) {
-            // Mostra o App imediatamente
-            document.getElementById('section-auth').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-
-            console.log("Iniciando carga de dados para:", usuario.email);
-
-            await carregarConfiguracoes();
-            console.log("Passo 1: Configurações OK");
-
-            await carregarDadosDoBanco();
-            console.log("Passo 2: Empréstimos OK");
-
-            await carregarBlackList();
-
-            // Mantém sua preferência de capital oculto no local storage [2025-12-21]
-            carregarPreferenciaPrivacidade();
-            atualizarDisplaySaldo();
-            trocarSecao('section-home');
-        } else {
-            document.getElementById('section-auth').style.display = 'flex';
-            document.getElementById('app-content').style.display = 'none';
-        }
-    } catch (error) {
-        console.error("Erro no fluxo após login:", error);
-    }
-});
-
-async function carregarBlackList() {
-    try {
-        const { data, error } = await supabase
-            .from('blacklist')
-            .select('nome, whatsapp');
+        // Busca apenas os empréstimos do usuário logado
+        const { data: emprestimos, error } = await supabase
+            .from('emprestimos')
+            .select('*')
+            .order('data_vencimento', { ascending: true });
 
         if (error) throw error;
 
-        if (data) {
-            // Limpa a lista local antes de repopular para evitar duplicados ao relogar
-            // (Se sua listaNegativadosGlobal estiver no app-state)
-            data.forEach(item => pushNegativado(item.nome));
-            console.log("Black List carregada com sucesso.");
-        }
-    } catch (err) {
-        console.error("Erro ao carregar Black List:", err);
+        // Limpa a lista local e preenche com o que veio do banco
+        emprestimosAtivos.length = 0;
+        emprestimos.forEach(emp => {
+            // Ajuste caso os nomes das colunas no banco sejam um pouco diferentes do JS
+            emprestimosAtivos.push({
+                ...emp,
+                numParcelas: emp.num_parcelas, // Mapeia colunas do banco para o seu código antigo
+                parcelaAtual: emp.parcela_atual,
+                valorRestanteParcelaAtual: emp.valor_restante_parcela_atual
+            });
+        });
+
+        renderizarListaVencimentos();
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
     }
 }
+
+// Chame a função de teste
+// O sistema só inicia de verdade aqui
+monitorarAutenticacao((usuario) => {
+    console.log("Logado como:", usuario.email);
+
+
+    carregarDadosDoBanco();
+
+    atualizarDisplaySaldo();
+});
+
+// Adicione um botão de logout no seu header se quiser testar o "Sair"
+// window.sairDoSistema = sairDoSistema;

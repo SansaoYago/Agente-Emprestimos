@@ -39,11 +39,11 @@ function _buildElementFor(type, payload) {
 
     if (type === 'emprestimo') {
         const dados = payload;
-        
+
         // CORREÇÃO AQUI: Tenta pegar o valor de diferentes chaves possíveis
         const vSolicitado = dados.valorSolicitado || dados.valor || dados.valorTotal || 0;
         const totalComJuros = dados.valorParcela * dados.numParcelas;
-        
+
         let parcelasHtml = '';
         try {
             const dataBase = new Date(dados.dataVencimento + 'T00:00:00');
@@ -58,7 +58,7 @@ function _buildElementFor(type, payload) {
                     </tr>
                 `;
             }
-        } catch(e) { parcelasHtml = '<tr><td colspan="3">Erro ao processar datas</td></tr>'; }
+        } catch (e) { parcelasHtml = '<tr><td colspan="3">Erro ao processar datas</td></tr>'; }
 
         el.innerHTML = `
             ${estilo}
@@ -97,29 +97,39 @@ function _buildElementFor(type, payload) {
 
     if (type === 'pagamento') {
         const { cliente, qtd, valor, restantes } = payload;
+
+        let textoStatus = "";
+        if (typeof restantes === 'string') {
+            textoStatus = restantes; // Se for texto (ex: "Saldo pendente"), exibe o texto
+        } else if (restantes > 0) {
+            textoStatus = `Restam ${restantes} parcelas.`;
+        } else {
+            textoStatus = "QUITADO!";
+        }
+
         el.innerHTML = `
-            ${estilo}
-            <div class="pdf-container">
-                <div class="pdf-content">
-                    <div class="pdf-header">
-                        <div class="logo">Agente Empréstimos</div>
-                        <div class="doc-title" style="color:#28a745">RECIBO DE PAGAMENTO</div>
-                    </div>
-                    <div class="info-box" style="margin-top:40px">
-                        <strong>Recebemos de:</strong> ${cliente}<br>
-                        <strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}<br>
-                        <strong>Referente a:</strong> ${qtd} parcela(s)<br>
-                        <strong>Data:</strong> ${new Date().toLocaleString('pt-br')}
-                    </div>
-                    <div style="background:rgba(40,167,69,0.1); padding:20px; border-radius:10px; text-align:center; margin-top:30px">
-                        <strong style="color:#28a745">${restantes > 0 ? `Restam ${restantes} parcelas.` : "QUITADO!"}</strong>
-                    </div>
-                </div>
-                <div class="pdf-footer">
-                    <div class="assinatura">COMPROVANTE DIGITAL</div>
-                </div>
+    ${estilo}
+    <div class="pdf-container">
+        <div class="pdf-content">
+            <div class="pdf-header">
+                <div class="logo">Agente Empréstimos</div>
+                <div class="doc-title" style="color:#28a745">RECIBO DE PAGAMENTO</div>
             </div>
-        `;
+            <div class="info-box" style="margin-top:40px">
+                <strong>Recebemos de:</strong> ${cliente}<br>
+                <strong>Valor Pago:</strong> ${valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}<br>
+                <strong>Referente a:</strong> ${qtd > 0 ? `${qtd} parcela(s)` : "Pagamento Parcial"}<br>
+                <strong>Data:</strong> ${new Date().toLocaleString('pt-br')}
+            </div>
+            <div style="background:rgba(40,167,69,0.1); padding:20px; border-radius:10px; text-align:center; margin-top:30px">
+                <strong style="color:#28a745">${textoStatus}</strong>
+            </div>
+        </div>
+        <div class="pdf-footer">
+            <div class="assinatura">COMPROVANTE DIGITAL</div>
+        </div>
+    </div>
+`;
         return { element: el, filename: `Recibo_${cliente}.pdf` };
     }
 
