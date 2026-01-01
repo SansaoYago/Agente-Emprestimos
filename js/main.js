@@ -1,4 +1,4 @@
-import { atualizarDisplaySaldo, addSaldo, subSaldo, addLucro, taxaJurosGlobal, setTaxaPercentual, isNegativado, saldoGlobal } from './app-state.js';
+import { atualizarDisplaySaldo, addSaldo, subSaldo, addLucro, taxaJurosGlobal, setTaxaPercentual, isNegativado, saldoGlobal, emprestimosAtivos, adicionarMeses } from './app-state.js';
 import { gerarComprovantePDF, gerarReciboPagamentoPDF } from './pdf.service.js';
 import { adicionarABlackList } from './blacklist.js';
 
@@ -158,8 +158,12 @@ function abrirModal(card, dados) {
 
 btnConfirmarPg.onclick = () => {
     const qtdSelecionada = parseInt(selectParcelas.value);
-    const spanParc = cardEmEdicao.querySelector('.pg-parcela');
-    let parcelaAtual = parseInt(spanParc.textContent.split(':')[1].trim().split('/')[0]);
+    
+    // 1. Atualiza os dados no objeto (o que está no array emprestimosAtivos)
+    dadosEmEdicao.parcelaAtual += qtdSelecionada;
+    
+    // 2. AVANÇA A DATA: Pula os meses de acordo com as parcelas pagas
+    dadosEmEdicao.dataVencimento = adicionarMeses(dadosEmEdicao.dataVencimento, qtdSelecionada);
 
     const valorRecebido = dadosEmEdicao.valorParcela * qtdSelecionada;
     const proporcaoJuros = (taxaJurosGlobal - 1) / taxaJurosGlobal;
@@ -168,19 +172,55 @@ btnConfirmarPg.onclick = () => {
     addLucro(lucroDestaOperacao);
     addSaldo(valorRecebido);
 
-    const novaParcelaIndice = parcelaAtual + qtdSelecionada;
-    const parcelasRestantes = dadosEmEdicao.numParcelas - (novaParcelaIndice - 1);
+    registrarNoHistorico(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, dadosEmEdicao.parcelaAtual > dadosEmEdicao.numParcelas);
+    gerarReciboPagamentoPDF(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, (dadosEmEdicao.numParcelas - dadosEmEdicao.parcelaAtual + 1));
 
-    registrarNoHistorico(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, novaParcelaIndice > dadosEmEdicao.numParcelas);
-    gerarReciboPagamentoPDF(dadosEmEdicao.cliente, qtdSelecionada, valorRecebido, parcelasRestantes);
-
-    if (novaParcelaIndice > dadosEmEdicao.numParcelas) {
+    if (dadosEmEdicao.parcelaAtual > dadosEmEdicao.numParcelas) {
+        // Remove da lista de ativos se quitou
+        const index = emprestimosAtivos.indexOf(dadosEmEdicao);
+        if (index > -1) emprestimosAtivos.splice(index, 1);
+        
+        // O card vai para o histórico (você pode adaptar sua função finalizarCard aqui)
         finalizarCard(cardEmEdicao);
-    } else {
-        spanParc.textContent = `Parc: ${novaParcelaIndice}/${dadosEmEdicao.numParcelas}`;
-    }
+    } 
+    
     modal.style.display = 'none';
+    renderizarListaVencimentos(); // Re-renderiza para atualizar a data e a posição na fila
 };
+
+function renderizarListaVencimentos() {
+    const listaVencimentos = document.getElementById('lista-vencimentos');
+    listaVencimentos.innerHTML = ''; // Limpa a lista atual
+
+    // ORDENAÇÃO: Mais antigos (atrasados) primeiro
+    emprestimosAtivos.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+
+    emprestimosAtivos.forEach(dados => {
+        const dataHoje = new Date().toISOString().split('T')[0];
+        const isAtrasado = dados.dataVencimento < dataHoje;
+        const classeStatus = isAtrasado ? 'em-atraso' : 'no-prazo';
+
+        const novoCard = document.createElement('div');
+        novoCard.className = `card-pagamento ${classeStatus}`;
+        
+        // Importante: vincular os dados ao card para o modal
+        novoCard.onclick = () => abrirModal(novoCard, dados);
+
+        novoCard.innerHTML = `
+            <div class="pagamento-dados">
+                <span class="pg-cliente">${dados.cliente}</span>
+                <span class="pg-valor">${dados.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${dados.numParcelas})</small></span>
+            </div>
+            <div class="pagamento-detalhes">
+                <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
+                    Venc: ${dados.dataVencimento.split('-').reverse().slice(0, 2).join('/')}
+                </span>
+                <span class="pg-parcela">Parc: ${dados.parcelaAtual}/${dados.numParcelas}</span>
+            </div>
+        `;
+        listaVencimentos.appendChild(novoCard);
+    });
+}
 
 function finalizarCard(card) {
     card.classList.remove('no-prazo', 'em-atraso');
@@ -191,6 +231,8 @@ function finalizarCard(card) {
     if (listaHistorico.querySelector('p')) listaHistorico.innerHTML = '';
     listaHistorico.prepend(card);
 }
+
+
 
 // SALVAR COM VALIDAÇÃO WHATSAPP
 btnSalvar.onclick = () => {
@@ -256,40 +298,20 @@ function processarSalvamento(d) {
     subSaldo(d.valor);
     atualizarDisplaySaldo();
 
-    const dataHoje = new Date().toISOString().split('T')[0];
-    const isAtrasado = d.dataInput < dataHoje;
-    const classeStatus = isAtrasado ? 'em-atraso' : 'no-prazo';
-
-    const novoCard = document.createElement('div');
-    novoCard.className = `card-pagamento ${classeStatus} animar-entrada`;
-
-    const dadosCard = {
+    const novoEmprestimo = {
         cliente: d.cliente,
         valorParcela: d.valorParcela,
         numParcelas: d.parcelas,
+        parcelaAtual: 1, // Começa na 1
         whatsapp: d.whatsapp,
         dataVencimento: d.dataInput,
         valorTotal: d.valor
     };
 
-    novoCard.onclick = () => abrirModal(novoCard, dadosCard);
+    emprestimosAtivos.push(novoEmprestimo); // Salva na lista
+    renderizarListaVencimentos(); // Desenha na tela ordenado
 
-    novoCard.innerHTML = `
-        <div class="pagamento-dados">
-            <span class="pg-cliente">${d.cliente}</span>
-            <span class="pg-valor">${d.valorParcela.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })} <small>(x${d.parcelas})</small></span>
-        </div>
-        <div class="pagamento-detalhes">
-            <span class="pg-data" style="color: ${isAtrasado ? 'var(--corErro)' : 'var(--corSucesso)'}">
-                Venc: ${d.dataInput.split('-').reverse().slice(0, 2).join('/')}
-            </span>
-            <span class="pg-parcela">Parc: 1/${d.parcelas}</span>
-        </div>
-    `;
-
-    listaVencimentos.appendChild(novoCard);
-    gerarComprovantePDF(dadosCard);
-
+    gerarComprovantePDF(novoEmprestimo);
     document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
     document.getElementById('input-parcelas').value = '1';
     botoesMenu[0].click();

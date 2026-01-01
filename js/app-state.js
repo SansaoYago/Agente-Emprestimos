@@ -1,4 +1,5 @@
 // Estado compartilhado e helpers de estado
+export let emprestimosAtivos = [];
 export let lucroTotal = 0.00;
 export let saldoGlobal = 5000;
 export let taxaJurosGlobal = 1.30; // multiplicador (1.30 = +30%)
@@ -23,4 +24,10 @@ export function isNegativado(nome) {
 
 export function pushNegativado(nome) {
     if (!listaNegativadosGlobal.includes(nome)) listaNegativadosGlobal.push(nome);
+}
+
+export function adicionarMeses(dataString, meses) {
+    const data = new Date(dataString + 'T00:00:00');
+    data.setMonth(data.getMonth() + meses);
+    return data.toISOString().split('T')[0];
 }
