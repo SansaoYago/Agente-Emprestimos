@@ -250,3 +250,23 @@ main {
 #btn-excluir-emprestimo:active {
     color: var(--corErro) !important;
 }
+
+/* Trava de Segurança: Esconde tudo que não é Login por padrão */
+#app-content, header, footer {
+    display: none;
+}
+
+/* Centralização do Painel de Login */
+#section-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    position: fixed; /* Fixa o login na frente de tudo */
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: var(--corFundo); /* Ou a cor que você desejar para a tela de login */
+}

@@ -25,6 +25,7 @@ const btnFecharModal = document.getElementById('btn-fechar-modal');
 const menuGestao = document.getElementById('menu-gestao-flutuante');
 const blurOverlay = document.getElementById('blur-overlay');
 const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
+const btnLogout = document.getElementById('btn-logout');
 
 const modalValidacao = document.getElementById('modal-validacao');
 const inputCodigo = document.getElementById('input-codigo-recebido');
@@ -107,6 +108,27 @@ function abrirOpcaoConfig(idAlvo) {
     fecharMenuGestao();
     trocarSecao(idAlvo);
 }
+
+btnLogout.onclick = async () => {
+    // Uma confirmação simples para não deslogar por acidente no mobile
+    const confirmar = confirm("Deseja realmente sair do sistema?");
+
+    if (confirmar) {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            // O monitorarAutenticacao que já temos vai detectar o logout 
+            // e esconder o app automaticamente, mas podemos reforçar limpando o cache
+            localStorage.clear(); // Limpa as preferências (opcional)
+            window.location.reload(); // Recarrega para garantir que o estado volte ao zero
+
+        } catch (err) {
+            console.error("Erro ao deslogar:", err.message);
+            alert("Erro ao sair do sistema.");
+        }
+    }
+};
 
 // CONFIGURAÇÕES (JUROS)
 const btnSalvarJuros = document.getElementById('btn-salvar-juros');
@@ -704,7 +726,7 @@ btnPrivacidade.onclick = () => {
 
 function carregarPreferenciaPrivacidade() {
     const salvoOculto = localStorage.getItem('privacidadeSaldo');
-    
+
     if (salvoOculto === 'true') {
         valorCapital.classList.add('ocultar-capital');
         btnPrivacidade.textContent = 'visibility_off';
@@ -729,15 +751,23 @@ window.botoesMenu = botoesMenu;
 monitorarAutenticacao(async (usuario) => {
     console.log("Monitor de autenticação detectou alteração. Usuário:", usuario ? "Logado" : "Deslogado");
 
+    // Selecionamos os elementos que estavam "vazando"
+    const sectionAuth = document.getElementById('section-auth');
+    const appContent = document.getElementById('app-content');
+    const header = document.querySelector('header');
+    const footer = document.querySelector('footer');
 
     try {
         if (usuario) {
-            // Mostra o App imediatamente
-            document.getElementById('section-auth').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
+            // 1. Controle Visual: Mostra o App e seus componentes, esconde o login
+            sectionAuth.style.display = 'none';
+            appContent.style.display = 'block';
+            if (header) header.style.display = 'flex';
+            if (footer) footer.style.display = 'block';
 
             console.log("Iniciando carga de dados para:", usuario.email);
 
+            // 2. Fluxo de Carga Original (Preservado)
             await carregarConfiguracoes();
             console.log("Passo 1: Configurações OK");
 
@@ -745,14 +775,24 @@ monitorarAutenticacao(async (usuario) => {
             console.log("Passo 2: Empréstimos OK");
 
             await carregarBlackList();
+            console.log("Passo 3: Black List OK");
 
+            // 3. Preferências e Inicialização da Home
             // Mantém sua preferência de capital oculto no local storage [2025-12-21]
             carregarPreferenciaPrivacidade();
             atualizarDisplaySaldo();
             trocarSecao('section-home');
+
         } else {
+            // DESLOGADO: Esconde TUDO e mostra apenas o login
             document.getElementById('section-auth').style.display = 'flex';
             document.getElementById('app-content').style.display = 'none';
+
+            // Se o header e footer estiverem fora do app-content, esconda-os também:
+            const header = document.querySelector('header');
+            const footer = document.querySelector('footer');
+            if (header) header.style.display = 'none';
+            if (footer) footer.style.display = 'none';
         }
     } catch (error) {
         console.error("Erro no fluxo após login:", error);
