@@ -220,8 +220,6 @@ main {
 
 /* Classe que o JavaScript vai adicionar/remover */
 .ocultar-capital {
-    filter: blur(8px);
-    opacity: 0.6;
     pointer-events: none; /* Impede selecionar o texto quando oculto */
 }
 

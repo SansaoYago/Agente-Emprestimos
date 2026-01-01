@@ -13,6 +13,32 @@
 </head>
 
 <body>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <section id="section-auth" class="content-section"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+        <img src="img/favicon.png" alt="Logo" style="width: 80px; margin-bottom: 20px;">
+        <h2 id="auth-title">Entrar no Sistema</h2>
+
+        <div class="form-group" style="width: 100%; max-width: 300px;">
+            <label>E-mail</label>
+            <input type="email" id="auth-email" placeholder="seu@email.com">
+        </div>
+
+        <div class="form-group" style="width: 100%; max-width: 300px;">
+            <label>Senha</label>
+            <input type="password" id="auth-senha" placeholder="******">
+        </div>
+
+        <button id="btn-login-supabase" class="botao-sucesso" style="width: 100%; max-width: 300px;">Entrar</button>
+        <button id="btn-registrar-supabase"
+            style="background:none; border:none; color:var(--corPrimaria); margin-top:15px; cursor:pointer;">Não tem
+            conta? Criar agora</button>
+    </section>
+
+    <!-- ENVOLVA O RESTANTE DO SEU CONTEÚDO ATUAL NUMA DIV COM ID "app-content" E style="display:none" -->
+    <div id="app-content" style="display: none;">
+        <!-- Aqui entra todo o seu código antigo (header, main, footer...) -->
+    </div>
     <div id="blur-overlay"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(8px); background: rgba(0,0,0,0.1); z-index: 40;">
     </div>
@@ -123,6 +149,10 @@
                     <label>Taxa de Juros (%)</label>
                     <input type="number" id="input-taxa-juros" placeholder="Ex: 30" value="30">
                 </div>
+                <div class="form-group">
+                    <label>Multa Diária por Atraso (%)</label>
+                    <input type="number" id="input-taxa-atraso" placeholder="Ex: 0.1" step="0.01" value="0.1">
+                </div>
                 <button id="btn-salvar-juros" class="botao-sucesso">Salvar Nova Taxa</button>
                 <button onclick="botoesMenu[0].click()"
                     style="background:none; border:none; color:var(--corPrimaria); margin-top:10px; cursor:pointer;">Cancelar</button>
@@ -181,8 +211,34 @@
 
             <button id="btn-confirmar-pagamento" class="botao-sucesso" style="margin-bottom: 10px;">Confirmar
                 Recebimento</button>
+            <button id="btn-abrir-parcial"
+                style="width: 100%; padding: 12px; background: #fff; border: 1px solid var(--corPrimaria); color: var(--corPrimaria); border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px;">Pagamento
+                Parcial</button>
             <button id="btn-fechar-modal"
                 style="background: none; border: none; color: #888; cursor: pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento Parcial -->
+    <div id="modal-parcial"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1100; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div
+            style="background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 15px; text-align: center;">
+            <h4 style="color: var(--corPrimaria); margin-bottom: 15px;">Pagamento Parcial</h4>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: block; text-align: left; font-size: 0.8em;">Valor a pagar (R$)</label>
+                <input type="number" id="input-valor-parcial" placeholder="0.00" step="0.01"
+                    style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; justify-content: center;">
+                <input type="checkbox" id="check-alterar-data" style="cursor: pointer;">
+                <label for="check-alterar-data" style="font-size: 0.75em; cursor: pointer; color: #444;">Alterar
+                    vencimento do restante?</label>
+            </div>
+            <button id="btn-confirmar-parcial" class="botao-sucesso" style="width: 100%; margin-bottom: 10px;">Confirmar
+                Parcial</button>
+            <button id="btn-fechar-parcial"
+                style="background: none; border: none; color: #888; cursor: pointer; font-size: 0.9em;">Cancelar</button>
         </div>
     </div>
 
@@ -202,6 +258,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/supabase-client.js"></script>
+    <script type="module" src="js/app-state.js"></script>
+    <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/main.js"></script>
 
 </body>
