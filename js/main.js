@@ -25,6 +25,7 @@ const btnFecharModal = document.getElementById('btn-fechar-modal');
 const menuGestao = document.getElementById('menu-gestao-flutuante');
 const blurOverlay = document.getElementById('blur-overlay');
 const btnFecharMenuGestao = document.getElementById('btn-fechar-gestao');
+const btnLogout = document.getElementById('btn-logout');
 
 const modalValidacao = document.getElementById('modal-validacao');
 const inputCodigo = document.getElementById('input-codigo-recebido');
@@ -107,6 +108,27 @@ function abrirOpcaoConfig(idAlvo) {
     fecharMenuGestao();
     trocarSecao(idAlvo);
 }
+
+btnLogout.onclick = async () => {
+    // Uma confirmação simples para não deslogar por acidente no mobile
+    const confirmar = confirm("Deseja realmente sair do sistema?");
+    
+    if (confirmar) {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            // O monitorarAutenticacao que já temos vai detectar o logout 
+            // e esconder o app automaticamente, mas podemos reforçar limpando o cache
+            localStorage.clear(); // Limpa as preferências (opcional)
+            window.location.reload(); // Recarrega para garantir que o estado volte ao zero
+            
+        } catch (err) {
+            console.error("Erro ao deslogar:", err.message);
+            alert("Erro ao sair do sistema.");
+        }
+    }
+};
 
 // CONFIGURAÇÕES (JUROS)
 const btnSalvarJuros = document.getElementById('btn-salvar-juros');
