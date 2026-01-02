@@ -36,9 +36,22 @@ export function atualizarDisplaySaldo() {
     }
 }
 
-export function addSaldo(valor) { saldoGlobal += valor; atualizarDisplaySaldo(); }
-export function subSaldo(valor) { saldoGlobal -= valor; atualizarDisplaySaldo(); }
-export function addLucro(valor) { lucroTotal += valor; atualizarDisplaySaldo(); }
+export function addSaldo(valor) { 
+    const v = parseFloat(valor) || 0;
+    saldoGlobal += v; 
+    atualizarDisplaySaldo(); 
+}
+export function subSaldo(valor) { 
+    const v = parseFloat(valor) || 0;
+    saldoGlobal -= v; 
+    atualizarDisplaySaldo(); 
+}
+
+export function addLucro(valor) { 
+    const v = parseFloat(valor) || 0;
+    lucroTotal += v; 
+    atualizarDisplaySaldo(); 
+}
 
 // Seters de Taxa
 export function setTaxaMultiplicador(mult) { taxaJurosGlobal = mult; }
@@ -82,5 +95,12 @@ export function calcularValorComJuros(valorBase, dias) {
 }
 
 // Seters Globais (Usados na carga do banco)
-export function setSaldoGlobal(valor) { saldoGlobal = valor; atualizarDisplaySaldo(); }
-export function setLucroTotal(valor) { lucroTotal = valor; atualizarDisplaySaldo(); }
+export function setSaldoGlobal(valor) { 
+    saldoGlobal = parseFloat(valor) || 0; 
+    atualizarDisplaySaldo(); 
+}
+
+export function setLucroTotal(valor) { 
+    lucroTotal = parseFloat(valor) || 0; 
+    atualizarDisplaySaldo(); 
+}

@@ -34,7 +34,6 @@ const inputCodigo = document.getElementById('input-codigo-recebido');
 let cardEmEdicao = null;
 let dadosEmEdicao = null;
 
-// Função para salvar saldo e lucro permanentemente no Supabase
 // 1. Função base para dar Update na tabela de configurações
 async function sincronizarFinanceiroComBanco() {
     try {
@@ -52,12 +51,8 @@ async function sincronizarFinanceiroComBanco() {
         console.error("Erro ao sincronizar financeiro:", err);
     }
 }
+//2. INTERCEPTORES "SAFE"
 
-/**
- * 2. INTERCEPTORES "SAFE"
- * Substitua o uso direto de addSaldo/subSaldo/addLucro por estas 
- * versões para garantir que o banco de dados seja atualizado.
- */
 const safeAddSaldo = (v) => {
     addSaldo(v);
     sincronizarFinanceiroComBanco();
@@ -327,23 +322,30 @@ btnConfirmarPg.onclick = async () => {
 
 function renderizarListaVencimentos() {
     const listaVencimentos = document.getElementById('lista-vencimentos');
-    if (!listaVencimentos) return; // Segurança contra elemento inexistente
+    if (!listaVencimentos) return; 
     listaVencimentos.innerHTML = '';
 
-    // ORDENAÇÃO: Mais antigos (atrasados) primeiro
-    emprestimosAtivos.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+    // --- MANUTENÇÃO DE INTEGRIDADE: FILTRO DE QUITAÇÃO ---
+    // Esta é a única adição: impede que parcelas inexistentes (ex: 4/3) apareçam
+    const emprestimosParaExibir = emprestimosAtivos.filter(emp => {
+        const pAtual = parseInt(emp.parcelaAtual) || 0;
+        const pTotal = parseInt(emp.numParcelas) || 0;
+        return pAtual <= pTotal; 
+    });
 
-    emprestimosAtivos.forEach(dados => {
-        // --- SEGURANÇA CONTRA VALORES NULOS (Resolve o erro da imagem) ---
+    // --- FUNCIONALIDADE ORIGINAL: ORDENAÇÃO ---
+    emprestimosParaExibir.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+
+    emprestimosParaExibir.forEach(dados => {
+        // --- FUNCIONALIDADE ORIGINAL: SEGURANÇA DE VALORES ---
         const valorParcelaValido = parseFloat(dados.valorParcela) || 0;
         const saldoPendenteValido = parseFloat(dados.valorRestanteParcelaAtual) || valorParcelaValido;
-        // -----------------------------------------------------------------
 
         const dataHoje = new Date().toISOString().split('T')[0];
         const isAtrasado = dados.dataVencimento < dataHoje;
         const classeStatus = isAtrasado ? 'em-atraso' : 'no-prazo';
 
-        // Lógica de Parcial (Mantida exatamente como a sua)
+        // --- FUNCIONALIDADE ORIGINAL: LÓGICA DE PAGAMENTO PARCIAL ---
         const infoParcial = saldoPendenteValido < valorParcelaValido
             ? `<br><small style="color:var(--corErro)">Falta: R$ ${saldoPendenteValido.toFixed(2)}</small>`
             : '';
@@ -351,9 +353,10 @@ function renderizarListaVencimentos() {
         const novoCard = document.createElement('div');
         novoCard.className = `card-pagamento ${classeStatus}`;
 
-        // Vínculo com o modal (Mantido)
+        // --- FUNCIONALIDADE ORIGINAL: VÍNCULO COM O MODAL ---
         novoCard.onclick = () => abrirModal(novoCard, dados);
 
+        // --- FUNCIONALIDADE ORIGINAL: MONTAGEM DO HTML (ESTRUTURA IDENTICA) ---
         novoCard.innerHTML = `
             <div class="pagamento-dados">
                 <span class="pg-cliente">${dados.cliente || 'Sem Nome'}</span>
@@ -400,7 +403,6 @@ btnConfirmarParcial.onclick = async () => {
     if (isNaN(valorPago) || valorPago <= 0 || valorPago > saldoAtualParcela) {
         return alert("Valor inválido ou maior que o saldo da parcela.");
     }
-
     // 1. Processar Financeiro
     const proporcaoJuros = (taxaJurosGlobal - 1) / taxaJurosGlobal;
     const lucroDestaOperacao = valorPago * proporcaoJuros;
@@ -514,13 +516,18 @@ async function carregarDadosDoBanco() {
 
         if (error) throw error;
 
-        emprestimosAtivos.length = 0;
+        emprestimosAtivos.length = 0; // Limpa o array atual
         emprestimos.forEach(emp => {
             emprestimosAtivos.push({
-                ...emp,
+                id: emp.id,
+                cliente: emp.cliente,
+                whatsapp: emp.whatsapp,
+                valorOriginal: parseFloat(emp.valor_total), // Sincroniza valor_total
+                valorParcela: parseFloat(emp.valor_parcela),
                 numParcelas: emp.num_parcelas,
                 parcelaAtual: emp.parcela_atual,
-                valorRestanteParcelaAtual: parseFloat(emp.valor_restante_parcela_atual)
+                dataVencimento: emp.data_vencimento,
+                valorRestanteParcelaAtual: parseFloat(emp.valor_restante_parcela_atual) || parseFloat(emp.valor_parcela)
             });
         });
 
@@ -550,8 +557,8 @@ btnSalvar.onclick = () => {
     const dataInput = document.getElementById('input-data').value;
     const parcelas = parseInt(document.getElementById('input-parcelas').value) || 1;
 
-    if (!cliente || !whatsapp || isNaN(valor) || !dataInput) {
-        return alert('Preencha todos os campos!');
+    if (!cliente || !whatsapp || isNaN(valor) || valor <= 0 || !dataInput) {
+        return alert('Preencha todos os campos corretamente!');
     }
 
     const dataHoje = new Date().toISOString().split('T')[0];
@@ -559,7 +566,6 @@ btnSalvar.onclick = () => {
         return alert('Erro: O vencimento não pode ser uma data que já passou.');
     }
 
-    // Bloqueia empréstimo se valor for maior que o saldo disponível
     if (valor > saldoGlobal) {
         return alert('Saldo insuficiente no capital disponível.');
     }
@@ -568,7 +574,15 @@ btnSalvar.onclick = () => {
     const valorTotalComJuros = valor * taxaJurosGlobal;
     const valorParcela = valorTotalComJuros / parcelas;
 
-    const dadosTemporarios = { cliente, whatsapp, valor, valorParcela, parcelas, dataInput };
+    // MAPEAMENTO CORRETO: Esses nomes (chaves) devem ser usados na função processar
+    const dadosTemporarios = {
+        cliente,
+        whatsapp,
+        valorOriginal: valor, // O segredo está aqui: use 'valorOriginal'
+        valorParcela: valorParcela,
+        parcelas: parcelas,
+        dataVencimento: dataInput // E aqui: use 'dataVencimento'
+    };
 
     const msg = `Olá ${cliente}, para validar seu empréstimo de R$ ${valor.toFixed(2)}, informe este código: *${codigoGeradoLocal}*\n\n` +
         `*DETALHES:* ${parcelas}x de R$ ${valorParcela.toFixed(2)} | Total: R$ ${valorTotalComJuros.toFixed(2)}`;
@@ -596,38 +610,47 @@ document.getElementById('btn-confirmar-codigo').onclick = () => {
 
 document.getElementById('btn-cancelar-validacao').onclick = () => { modalValidacao.style.display = 'none'; };
 
+// 2. FUNÇÃO DE PROCESSAMENTO (Salvamento no Banco)
 async function processarSalvamento(d) {
     try {
-        // 1. Pegamos o usuário logado
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return alert("Erro: Usuário não autenticado.");
 
-        // 2. Preparamos o objeto para o Banco de Dados
+        // Verificação de segurança: se d.valorOriginal não existir, algo falhou no mapeamento
+        if (!d.valorOriginal || isNaN(d.valorOriginal)) {
+            console.error("Dados recebidos inválidos:", d);
+            return alert("Erro crítico: Os dados financeiros foram perdidos no processamento.");
+        }
+
+        // Montagem do objeto usando os dados padronizados (d.valorOriginal e d.dataVencimento)
         const novoEmprestimo = {
             user_id: user.id,
             cliente: d.cliente,
             whatsapp: d.whatsapp,
-            valor_total: d.valor,
+            valor_total: d.valorOriginal,
             valor_parcela: d.valorParcela,
             num_parcelas: d.parcelas,
             parcela_atual: 1,
-            data_vencimento: d.dataInput,
+            data_vencimento: d.dataVencimento,
             valor_restante_parcela_atual: d.valorParcela
         };
 
-        // 3. Enviamos para a tabela 'emprestimos' do Supabase
         const { error } = await supabase.from('emprestimos').insert([novoEmprestimo]);
 
         if (error) throw error;
 
-        // 4. Se deu certo, atualizamos o saldo localmente
-        safeSubSaldo(d.valor);
+        // Atualização financeira sincronizada
+        safeSubSaldo(d.valorOriginal);
         atualizarDisplaySaldo();
 
         alert('Empréstimo salvo com sucesso no banco de dados!');
 
-        // 5. Atualiza a lista e limpa o formulário
+        // Limpa formulário e fecha modais
         document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
+        modalValidacao.style.display = 'none';
+
+        // Atualiza a lista visualmente e volta para a home
+        await carregarDadosDoBanco();
         botoesMenu[0].click();
 
     } catch (error) {
@@ -737,7 +760,6 @@ function carregarPreferenciaPrivacidade() {
         btnPrivacidade.textContent = 'visibility';
     }
 }
-
 carregarPreferenciaPrivacidade();
 
 // Expõe funções/variáveis usadas por handlers inline no HTML
@@ -745,8 +767,6 @@ window.abrirOpcaoConfig = abrirOpcaoConfig;
 window.botoesMenu = botoesMenu;
 
 // Chame a função de teste
-// O sistema só inicia de verdade aqui
-// Localize o final do seu main.js e substitua por este bloco:
 
 monitorarAutenticacao(async (usuario) => {
     console.log("Monitor de autenticação detectou alteração. Usuário:", usuario ? "Logado" : "Deslogado");
@@ -778,7 +798,6 @@ monitorarAutenticacao(async (usuario) => {
             console.log("Passo 3: Black List OK");
 
             // 3. Preferências e Inicialização da Home
-            // Mantém sua preferência de capital oculto no local storage [2025-12-21]
             carregarPreferenciaPrivacidade();
             atualizarDisplaySaldo();
             trocarSecao('section-home');
@@ -808,8 +827,6 @@ async function carregarBlackList() {
         if (error) throw error;
 
         if (data) {
-            // Limpa a lista local antes de repopular para evitar duplicados ao relogar
-            // (Se sua listaNegativadosGlobal estiver no app-state)
             data.forEach(item => pushNegativado(item.nome));
             console.log("Black List carregada com sucesso.");
         }
