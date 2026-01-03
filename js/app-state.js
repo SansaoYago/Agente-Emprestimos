@@ -6,7 +6,7 @@ export let emprestimosAtivos = [];
 export let lucroTotal = 0.00;
 export let saldoGlobal = 0;
 export let taxaJurosGlobal = 1.30;
-export let taxaJurosAtrasoCid = 0.001;
+export let multaDiariaFixa = 0.00;
 export let listaNegativadosGlobal = [];
 
 /**
@@ -56,7 +56,9 @@ export function addLucro(valor) {
 // Seters de Taxa
 export function setTaxaMultiplicador(mult) { taxaJurosGlobal = mult; }
 export function setTaxaPercentual(pct) { taxaJurosGlobal = 1 + (pct / 100); }
-export function setTaxaAtrasoPercentual(pct) { taxaJurosAtrasoCid = pct / 100; }
+export function setTaxaAtrasoPercentual(valor) { 
+    multaDiariaFixa = parseFloat(valor) || 0; 
+}
 
 // Negativação
 export function isNegativado(nome) {
@@ -91,7 +93,7 @@ export function calcularDiasAtraso(dataVencimento) {
 
 export function calcularValorComJuros(valorBase, dias) {
     if (dias <= 0) return valorBase;
-    return valorBase * Math.pow((1 + taxaJurosAtrasoCid), dias);
+    return valorBase + (multaDiariaFixa * dias);
 }
 
 // Seters Globais (Usados na carga do banco)
