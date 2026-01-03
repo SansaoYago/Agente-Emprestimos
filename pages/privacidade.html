@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mediaq.css" media="screen and (min-width: 900px)">
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <a id="back" href="../index.html">Voltar</a>
+        <h1>Política de Privacidade – Agente Empréstimos</h1>
+
+        <p>Data de Efetivação: [03 de Janeiro de 2026]</p>
+    </header>
+
+    <div class="contain">
+            <section id="Privacidade">
+                <article>
+                    <p>Bem-vindo ao Agente Empréstimos! Sua privacidade é nossa prioridade máxima. Esta política explica
+                        como suas informações são tratadas em nossa plataforma.</p>
+                </article>
+                <article>
+                    <h2>1. Nosso Compromisso com a Sua Privacidade:</h2>
+                    <p>No Agente Empréstimos, implementamos um design focado na privacidade desde o início. Isso
+                        significa
+                        que seus dados financeiros (saldo, lucro, detalhes de empréstimos) são acessíveis apenas por
+                        você.
+                        Mesmo nós, os desenvolvedores da plataforma, não temos acesso direto ao conteúdo dos seus dados
+                        transacionais.</p>
+                </article>
+                <article>
+                    <h2>2. Quais Dados Coletamos e Por Quê:</h2>
+                    <p>Informações de Autenticação: Coletamos seu e-mail e senha para criar e proteger sua conta. Usamos
+                        o
+                        Supabase Auth, um serviço seguro, para gerenciar isso. Seu e-mail pode ser usado para
+                        recuperação de
+                        senha ou comunicações essenciais do sistema.</p>
+                    <p>Dados Financeiros e de Empréstimos: Quando você registra um empréstimo (nome do cliente, valor,
+                        parcelas, datas, WhatsApp do cliente), esses dados são armazenados de forma segura e privada
+                        para
+                        sua conta. Usamos essas informações para:</p>
+                    <ul>
+                        <li>Gerenciar seus empréstimos ativos e históricos.</li>
+                        <li>Calcular seu saldo e lucro.</li>
+                        <li>Gerar comprovantes e recibos em PDF para seus clientes.</li>
+                        <li>Aplicar a lista de negativação que você mesmo gerencia.</li>
+                    </ul>
+                    <p>Preferências Locais: Armazenamos em seu próprio dispositivo (LocalStorage) uma preferência para
+                        "ocultar o capital" na tela principal. Isso é apenas para sua conveniência e segurança visual, e
+                        não
+                        é compartilhado conosco.</p>
+                </article>
+                <article>
+                    <h2>3. Como Seus Dados São Protegidos (Segurança em Camadas):</h2>
+                    <p>Nosso sistema foi construído com as seguintes camadas de segurança:</p>
+                    <ul>
+                        <li>Isolamento de Dados por Usuário (Row Level Security - RLS): Esta é a nossa principal
+                            garantia. O
+                            banco de dados é configurado para que cada usuário só possa acessar suas próprias
+                            informações.
+                            Isso significa que é tecnicamente impossível para um usuário ver os dados de outro, ou para
+                            nós,
+                            como desenvolvedores, consultarmos diretamente o conteúdo financeiro das suas operações.
+                        </li>
+                        <li>Dados Criptografados em Trânsito: Toda a comunicação entre seu aplicativo e nosso servidor
+                            Supabase é protegida por criptografia SSL/TLS, garantindo que suas informações não possam
+                            ser
+                            interceptadas.</li>
+                        <li>Autenticação Segura (Supabase Auth): Utilizamos um serviço de autenticação robusto que
+                            protege
+                            suas credenciais.</li>
+                        <li>Controle de Acesso do Desenvolvedor: Mesmo como administradores do sistema, nosso acesso é
+                            restrito. Só podemos ver informações básicas de usuário (seu ID de usuário, e-mail) no
+                            painel de
+                            controle. Para realizar tarefas de suporte, como um reset de sua conta solicitado por você,
+                            usamos funções específicas do banco de dados que apagam seus dados sem que tenhamos que
+                            visualizá-los.</li>
+                    </ul>
+                </article>
+                <article>
+                    <h2>4. Compartilhamento de Dados:</h2>
+                    <p>Não compartilhamos, vendemos ou alugamos suas informações pessoais ou dados financeiros com
+                        terceiros, exceto conforme exigido por lei.</p>
+                </article>
+                <article>
+                    <h2>5. Controle e Gerenciamento de Seus Dados:</h2>
+                    <p>Você tem controle total sobre os empréstimos e a lista de negativação que cadastra.</p>
+                    <p>Você pode solicitar o reset completo da sua conta a qualquer momento. Ao fazer isso, todos os
+                        seus
+                        dados financeiros (empréstimos, configurações, blacklist) serão permanentemente excluídos.</p>
+                </article>
+                <article>
+                    <h2>6. Código Aberto e Transparência:</h2>
+                    <p>Nosso código-fonte é aberto e visível publicamente no GitHub. Isso permite que qualquer pessoa,
+                        incluindo especialistas em segurança, revise como nosso sistema funciona e valide nossas
+                        promessas
+                        de privacidade. Acreditamos que a transparência é a melhor forma de construir confiança. <br> <a
+                            href="https://github.com/SansaoYago/Agente-Emprestimos" target="_blank">Acessar o Repositório</a></p>
+                </article>
+                <article id="fim-priv">
+                    <h2>7. Alterações a Esta Política:</h2>
+                    <p>Podemos atualizar nossa Política de Privacidade periodicamente.
+                        Notificaremos você sobre quaisquer
+                        alterações publicando a nova política nesta página.</p>
+                </article>
+            </section>
+
+
+        <section id="fluxograma">
+            <p>
+                Fluxograma de Privacidade e Segurança (Imagem)
+                Aqui está o conceito para um fluxograma que visualiza as camadas de privacidade. Eu vou gerar a imagem.
+            </p>
+
+            <figure><img width="fit-content" src="../img/fluxograma.jpg" alt=""></figure>
+        </section>
+
+        <section id="SQL">
+            Esquemas de Segurança Bem Divididos (Tabelas SQL e Políticas RLS)
+            Aqui estão os comandos SQL que garantem todas as camadas de segurança e privacidade que você deseja, com
+            explicações detalhadas para cada um.
+
+            <pre>
+            <code>
+    
+    <span class="comentario">
+        -- ###############################################################
+        -- # ESQUEMAS DE SEGURANÇA E PRIVACIDADE DO BANCO DE DADOS       #
+        -- # PROJETO: AGENTE EMPRÉSTIMOS                                 #
+        -- # OBJETIVO: GARANTIR QUE CADA USUÁRIO SÓ ACESSE SEUS PRÓPRIOS #
+        -- #           DADOS E QUE O DESENVOLVEDOR NÃO VEJA CONTEÚDO.    #
+        -- ###############################################################
+    
+        -- ===============================================================
+        -- PASSO 1: CRIAÇÃO DAS TABELAS (SE AINDA NÃO EXISTIREM)
+        -- Garante a estrutura básica com a coluna 'user_id' referenciando auth.users.
+        -- 'numeric' é usado para valores monetários para precisão.
+        -- ===============================================================
+    </span>
+    
+        <span class="comentario">-- Tabela de Configurações (Saldo Global, Lucro, Taxas)</span>
+    
+            <span class="code">create table</span> if <span class="code">not exists</span> public.configuracoes (
+              id uuid <span class="code">default</span> gen_random_uuid() <span class="code">primary</span> key,
+              user_id uuid <span class="code">references</span> auth.users(id) <span class="code">not null</span>, -- CHAVE DE SEGURANÇA: Vincula ao usuário logado
+              saldo_global numeric default <span class="num">0</span>,
+              lucro_total <span class="code">numeric default</span> <span class="num">0</span>,
+              taxa_juros_padrao <span class="code">numeric default</span> <span class="num">1.30</span>,
+              taxa_juros_atraso <span class="code">numeric default</span> <span class="num">0.001</span>,
+              <span class="code">unique</span>(user_id), <span class="comentario">-- Garante que cada usuário tenha APENAS uma linha de configuração</span>
+              created_at <span class="code">timestamp with time</span> zone <span class="code">default</span> now()
+            );
+    
+        <span class="comentario">-- Tabela de Empréstimos</span>
+            <span class="code">create table</span> if <span class="code">not exists</span> public.emprestimos (
+              id uuid <span class="code">default</span> gen_random_uuid() <span class="code">primary</span> key,
+              user_id uuid <span class="code">references</span> auth.users(id) <span class="code">not null</span>, -- CHAVE DE SEGURANÇA: Vincula ao usuário logado
+              cliente text <span class="code">not null</span>,
+              whatsapp text,
+              valor_total <span class="code">numeric not null</span>,
+              valor_parcela <span class="code">numeric not null</span>,
+              num_parcelas <span class="code">int not null</span>,
+              parcela_atual <span class="code">int default</span> <span class="num">1</span>,
+              data_vencimento <span class="code">date not null</span>,
+              valor_restante_parcela_atual <span class="code">numeric</span>,
+              created_at <span class="code">timestamp with time</span> zone <span class="code">default</span> now()
+            );
+    
+        <span class="comentario">-- Tabela de Blacklist</span>
+            <span class="code">create table</span> if <span class="code">not exists</span> public.blacklist (
+              id uuid <span class="code">default</span> gen_random_uuid() <span class="code">primary</span> key,
+              user_id uuid <span class="code">references</span> auth.users(id) <span class="code">not null</span>, <span class="comentario">-- CHAVE DE SEGURANÇA: Vincula ao usuário logado</span>
+              nome text <span class="code">not null</span>,
+              whatsapp text,
+              <span class="code">unique</span>(user_id, nome), <span class="comentario">-- Garante que um cliente só pode ser negativado uma vez por usuário</span>
+              created_at <span class="code">timestamp with time</span> zone <span class="code">default</span> now()
+            );
+    
+    
+    <span class="comentario">
+        -- ===============================================================
+        -- PASSO 2: ATIVAÇÃO DO ROW LEVEL SECURITY (RLS) - "A MURALHA DA PRIVACIDADE"
+        -- Este é o coração da privacidade. O RLS filtra as consultas NO BANCO DE DADOS,
+        -- antes mesmo dos dados chegarem à sua aplicação ou ao desenvolvedor.
+        -- ===============================================================
+    </span>
+    
+        <span class="comentario">-- Ativa o RLS em todas as tabelas sensíveis</span>
+            <span class="code">ALTER TABLE</span> public.configuracoes ENABLE <span class="code">ROW</span> LEVEL SECURITY;
+            <span class="code">ALTER TABLE</span> public.emprestimos ENABLE <span class="code">ROW</span> LEVEL SECURITY;
+            <span class="code">ALTER TABLE</span> public.blacklist ENABLE <span class="code">ROW</span> LEVEL SECURITY;
+    
+    
+    <span class="comentario">
+        -- ===============================================================
+        -- PASSO 3: DEFINIÇÃO DAS POLÍTICAS DE ACESSO (POLICIES)
+        -- Estas políticas determinam QUEM pode fazer o QUÊ com os dados.
+        -- "FOR ALL" significa que se aplica a SELECT, INSERT, UPDATE, DELETE.
+        -- "USING (auth.uid() = user_id)" é a regra mágica: só permite a operação
+        -- se o ID do usuário logado (auth.uid()) for IGUAL ao 'user_id' da linha.
+        -- ===============================================================
+    </span>
+    
+        <span class="comentario">-- Política para a tabela 'configuracoes'</span>
+            <span class="code">CREATE</span> POLICY "Apenas usuários autenticados podem gerenciar suas configuracoes"
+            <span class="code">ON</span> public.configuracoes <span class="code">FOR ALL</span>
+            <span class="code">USING</span> (auth.uid() = user_id);
+    
+        <span class="comentario">-- Política para a tabela 'emprestimos'</span>
+            <span class="code">CREATE</span> POLICY "Apenas usuários autenticados podem gerenciar seus emprestimos"
+            <span class="code">ON</span> public.emprestimos <span class="code">FOR ALL</span>
+            <span class="code">USING</span> (auth.uid() = user_id);
+    
+        <span class="comentario">-- Política para a tabela 'blacklist'</span>
+            <span class="code">CREATE</span> POLICY "Apenas usuários autenticados podem gerenciar sua blacklist"
+            <span class="code">ON</span> public.blacklist <span class="code">FOR ALL</span>
+            <span class="code">USING</span> (auth.uid() = user_id);
+    
+    
+    <span class="comentario">
+        -- ===============================================================
+        -- PASSO 4: FUNÇÃO DE RESET DE DADOS (PARA O DESENVOLVEDOR/SUPORTE)
+        -- Permite que o desenvolvedor resete a conta de um usuário (a pedido dele)
+        -- SEM que o desenvolvedor tenha que visualizar os dados.
+        -- 'SECURITY DEFINER' é crucial: a função é executada com privilégios de SUPERUSER
+        -- para ignorar o RLS APENAS dentro desta função, garantindo a limpeza.
+        -- ===============================================================
+    </span>
+    
+            <span class="code">CREATE OR</span> REPLACE <span class="code">FUNCTION</span> public.resetar_dados_usuario(target_user_id uuid)
+            <span class="code">RETURNS</span> void <span class="code">AS</span> $$
+            <span class="code">BEGIN</span>
+        <span class="comentario">-- 1. Deleta todos os empréstimos associados ao ID fornecido</span>
+              <span class="code">DELETE FROM</span> public.emprestimos <span class="code">WHERE</span> user_id = target_user_id;
+    
+        <span class="comentario">-- 2. Reseta as configurações financeiras (saldo e lucro) para zero para o ID fornecido</span>
+              UPDATE public.configuracoes
+              <span class="code">SET</span> saldo_global = <sapn class="num">0</sapn>, lucro_total = <sapn class="num">0</sapn>
+              <span class="code">WHERE</span> user_id = target_user_id;
+    
+        <span class="comentario">-- 3. Limpa a lista de negativação associada ao ID fornecido</span>
+              <span class="code">DELETE FROM</span> public.blacklist <span class="code">WHERE</span> user_id = target_user_id;
+            <span class="code">END</span>;
+            $$ <span class="code">LANGUAGE</span> plpgsql SECURITY DEFINER;
+    
+    <span class="comentario">
+        -- OBS: Para o desenvolvedor rodar esta função:
+        -- SELECT public.resetar_dados_usuario('O-ID-DO-USUARIO-AQUI');
+    </span>
+    
+    <sapn class="comentario">
+        -- ===============================================================
+        -- PASSO 5: CONFIGURAÇÃO DE SEGURANÇA PARA A CHAVE ANON_KEY
+        -- Por padrão, a 'anon_key' é segura com RLS. Este passo é mais um lembrete
+        -- de que sua aplicação frontend NÃO DEVE usar a 'service_role_key'.
+        -- Sua anon_key está sujeita ao RLS, garantindo o isolamento.
+        -- ===============================================================
+    </sapn>
+    
+    <span class="comentario">
+        -- Nenhuma ação SQL é necessária aqui. É uma política implícita do Supabase.
+        -- Garanta que em 'supabase-client.js' você usa a 'SUPABASE_ANON_KEY'.
+    </span>
+    
+    <span class="comentario">
+        -- ###############################################################
+        -- # FIM DOS ESQUEMAS DE SEGURANÇA E PRIVACIDADE                 #
+        -- ###############################################################
+    </span>
+            </code>
+        </pre>
+        </section>
+        <footer>
+            <p>Desenvolvido por <b>Cristian Yago</b></p>
+            <span class="links">
+                <a href="https://github.com/SansaoYago" target="_blank" ><img src="img/github.png" alt="Icone Github" id="gith"></a>
+                <a href="https://wa.me/+55011966735579/?text=Olá, Cristian!" target="_blank"><img src="img/whatsapp.png" alt="Icone WhatsApp" id="whats"></a>
+            </span>
+        </footer>
+    </div>
+</body>
+
+</html>

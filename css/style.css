@@ -270,3 +270,16 @@ main {
     z-index: 9999;
     background-color: var(--corFundo); /* Ou a cor que você desejar para a tela de login */
 }
+
+#Privacidade {
+    text-decoration: none;
+    position: absolute;
+    bottom: 20px;
+    left: auto;
+    transition: 250ms;
+}
+
+#Privacidade:hover {
+    color: purple;
+}
+

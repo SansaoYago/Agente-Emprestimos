@@ -1,0 +1,40 @@
+@charset "UTF-8";
+
+header h1 {
+    font-size: 1.7em;
+}
+
+section {
+    width: 70vw;
+}
+
+section article {
+    font-size: 1.5em;
+}
+
+pre {
+    font-size: 1.2vw;
+}
+
+footer p {
+    text-indent: 50px;
+}
+
+#back {
+    position: absolute;
+    text-decoration: none;
+    color: white;
+    top: 0;
+    left: 10px;
+    border-radius: 0px 0px 10px 10px;
+    background-color: rgba(49, 0, 128, 0.408);
+    padding: 8px;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.353);
+    transition: 350ms;
+}
+
+#back:hover {
+    padding: 12px 8px;
+    background-color: rgba(49, 0, 128, 0.667);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.392);
+}
