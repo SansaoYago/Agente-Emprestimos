@@ -139,7 +139,7 @@ if (btnSalvarJuros) {
             // Chama a nova função do app-state
             setTaxaAtrasoPercentual(novaTaxaAtraso);
 
-            alert(`Configurado com sucesso!\nJuros Padrão: ${novaTaxaPadrao}%\nMulta Diária: ${novaTaxaAtraso}%`);
+            alert(`Configurado com sucesso!\nJuros Padrão: ${novaTaxaPadrao}\nMulta Diária: ${novaTaxaAtraso}`);
             botoesMenu[0].click(); // Volta para a home
         } else {
             alert("Por favor, insira valores válidos.");
@@ -495,7 +495,7 @@ async function carregarConfiguracoes() {
         setSaldoGlobal(parseFloat(data.saldo_global));
         setLucroTotal(parseFloat(data.lucro_total));
         setTaxaPercentual((data.taxa_juros_padrao - 1) * 100); // Mantido
-        setTaxaAtrasoPercentual(data.taxa_juros_atraso * 100); // Mantido
+        setTaxaAtrasoPercentual(data.taxa_juros_atraso); // Mantido
 
         // 4. Força a atualização visual logo após carregar
         atualizarDisplaySaldo();
@@ -616,13 +616,13 @@ async function processarSalvamento(d) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return alert("Erro: Usuário não autenticado.");
 
-        // Verificação de segurança: se d.valorOriginal não existir, algo falhou no mapeamento
+        // Verificação de segurança
         if (!d.valorOriginal || isNaN(d.valorOriginal)) {
             console.error("Dados recebidos inválidos:", d);
             return alert("Erro crítico: Os dados financeiros foram perdidos no processamento.");
         }
 
-        // Montagem do objeto usando os dados padronizados (d.valorOriginal e d.dataVencimento)
+        // 1. Montagem do objeto para o banco
         const novoEmprestimo = {
             user_id: user.id,
             cliente: d.cliente,
@@ -635,23 +635,39 @@ async function processarSalvamento(d) {
             valor_restante_parcela_atual: d.valorParcela
         };
 
+        // 2. Inserção no Supabase
         const { error } = await supabase.from('emprestimos').insert([novoEmprestimo]);
-
         if (error) throw error;
 
-        // Atualização financeira sincronizada
+        // 3. DISPARO DO PDF (Antes de qualquer alert ou reload)
+        // Passamos os dados exatamente como o pdf.service espera
+        gerarComprovantePDF({
+            cliente: d.cliente,
+            whatsapp: d.whatsapp,
+            valor_total: d.valorOriginal,
+            valor_parcela: d.valorParcela,
+            num_parcelas: d.parcelas,
+            data_vencimento: d.dataVencimento
+        });
+
+        // 4. Atualização financeira e interface
         safeSubSaldo(d.valorOriginal);
-        atualizarDisplaySaldo();
+        
+        // Mantém a privacidade do capital se estiver ativa
+        atualizarDisplaySaldo(); 
 
-        alert('Empréstimo salvo com sucesso no banco de dados!');
+        // 5. FINALIZAÇÃO COM ATRASO (Para não travar o PDF no mobile)
+        setTimeout(async () => {
+            alert('Empréstimo salvo com sucesso! Gerando comprovante...');
 
-        // Limpa formulário e fecha modais
-        document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
-        modalValidacao.style.display = 'none';
+            // Limpa formulário
+            document.querySelectorAll('#section-cadastro input').forEach(i => i.value = '');
+            modalValidacao.style.display = 'none';
 
-        // Atualiza a lista visualmente e volta para a home
-        await carregarDadosDoBanco();
-        botoesMenu[0].click();
+            // Atualiza a lista e volta para a home
+            await carregarDadosDoBanco();
+            if (botoesMenu[0]) botoesMenu[0].click();
+        }, 600);
 
     } catch (error) {
         console.error("Erro ao salvar:", error);
