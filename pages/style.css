@@ -1,0 +1,94 @@
+@charset "UTF-8";
+
+* {
+    text-align: justify;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: rgb(69, 117, 143);
+    top: 0;
+    position: sticky;            
+    padding: 15px 5px;
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.279);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.432);
+    border-radius: 0px 0px 4px 4px;
+}
+
+header > h1 {
+    font-size: 1.2em;
+    color: rgba(255, 255, 255, 0.944);
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+header > p {
+    text-align: right;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.812);
+    font-size: 0.8em;
+}
+
+.contain {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    padding: 0px 15px;
+    margin-top: 15px;
+}
+
+section {
+    background-color: rgba(127, 255, 212, 0.275);
+    padding: 15px;
+}
+
+section > article > p {
+    font-size: 0.9em;
+    padding: 0px 10px;
+}
+
+section > article > h2 {
+    font-size: 1em;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.315);
+}
+
+ul {
+    list-style-position: inside;
+    padding: 10px 0px;
+    font-size: 0.8em;
+}
+
+ul > li {
+    text-indent: 15px;
+}
+
+article {
+    padding: 12px 0;
+}
+
+pre {
+    font-size: 1.5vw;
+}
+
+
+
+img {
+    width: 80vw;
+    margin: auto;
+}
+
+.code {
+    color: #C58AF9;
+}
+
+.comentario {
+    color: #989fb2e5;
+}
+
+.num {
+    color: #ff986f;
+}
