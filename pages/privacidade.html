@@ -1,104 +1,129 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mediaq.css" media="screen and (min-width: 900px)">
 </head>
+
 <body>
     <header>
         <h1>Política de Privacidade – Agente Empréstimos</h1>
-        
+
         <p>Data de Efetivação: [03 de Janeiro de 2026]</p>
     </header>
 
-<div class="contain">
-    <section id="Privacidade">
-        <article>
-            <p>Bem-vindo ao Agente Empréstimos! Sua privacidade é nossa prioridade máxima. Esta política explica como suas informações são tratadas em nossa plataforma.</p>
-        </article>
-    
-        <article>
-            <h2>1. Nosso Compromisso com a Sua Privacidade:</h2>
-    
-            <p>No Agente Empréstimos, implementamos um design focado na privacidade desde o início. Isso significa que seus dados financeiros (saldo, lucro, detalhes de empréstimos) são acessíveis apenas por você. Mesmo nós, os desenvolvedores da plataforma, não temos acesso direto ao conteúdo dos seus dados transacionais.</p>
-        </article>
-    
-        <article>
-            <h2>2. Quais Dados Coletamos e Por Quê:</h2>
-    
-            <p>Informações de Autenticação: Coletamos seu e-mail e senha para criar e proteger sua conta. Usamos o Supabase Auth, um serviço seguro, para gerenciar isso. Seu e-mail pode ser usado para recuperação de senha ou comunicações essenciais do sistema.</p>
-    
-            <p>Dados Financeiros e de Empréstimos: Quando você registra um empréstimo (nome do cliente, valor, parcelas, datas, WhatsApp do cliente), esses dados são armazenados de forma segura e privada para sua conta. Usamos essas informações para:</p>
-    
-            <ul>
-                <li>Gerenciar seus empréstimos ativos e históricos.</li>
-                <li>Calcular seu saldo e lucro.</li>
-                <li>Gerar comprovantes e recibos em PDF para seus clientes.</li>
-                <li>Aplicar a lista de negativação que você mesmo gerencia.</li>
-            </ul>
-    
-            <p>Preferências Locais: Armazenamos em seu próprio dispositivo (LocalStorage) uma preferência para "ocultar o capital" na tela principal. Isso é apenas para sua conveniência e segurança visual, e não é compartilhado conosco.</p>
-        </article>
-    
-        <article>
-            <h2>3. Como Seus Dados São Protegidos (Segurança em Camadas):</h2>
-    
-            <p>Nosso sistema foi construído com as seguintes camadas de segurança:</p>
-    
-            <ul>
-                <li>Isolamento de Dados por Usuário (Row Level Security - RLS): Esta é a nossa principal garantia. O banco de dados é configurado para que cada usuário só possa acessar suas próprias informações. Isso significa que é tecnicamente impossível para um usuário ver os dados de outro, ou para nós, como desenvolvedores, consultarmos diretamente o conteúdo financeiro das suas operações.</li>
-                <li>Dados Criptografados em Trânsito: Toda a comunicação entre seu aplicativo e nosso servidor Supabase é protegida por criptografia SSL/TLS, garantindo que suas informações não possam ser interceptadas.</li>
-                <li>Autenticação Segura (Supabase Auth): Utilizamos um serviço de autenticação robusto que protege suas credenciais.</li>
-                <li>Controle de Acesso do Desenvolvedor: Mesmo como administradores do sistema, nosso acesso é restrito. Só podemos ver informações básicas de usuário (seu ID de usuário, e-mail) no painel de controle. Para realizar tarefas de suporte, como um reset de sua conta solicitado por você, usamos funções específicas do banco de dados que apagam seus dados sem que tenhamos que visualizá-los.</li>
-            </ul>
-        </article>
-    
-        <article>
-            <h2>4. Compartilhamento de Dados:</h2>
-    
-            <p>Não compartilhamos, vendemos ou alugamos suas informações pessoais ou dados financeiros com terceiros, exceto conforme exigido por lei.</p>
-        </article>
-    
-        <article>
-            <h2>5. Controle e Gerenciamento de Seus Dados:</h2>
-    
-            <p>Você tem controle total sobre os empréstimos e a lista de negativação que cadastra.</p>
-    
-            <p>Você pode solicitar o reset completo da sua conta a qualquer momento. Ao fazer isso, todos os seus dados financeiros (empréstimos, configurações, blacklist) serão permanentemente excluídos.</p>
-        </article>
-    
-        <article>
-            <h2>6. Código Aberto e Transparência:</h2>
-    
-            <p>Nosso código-fonte é aberto e visível publicamente no GitHub. Isso permite que qualquer pessoa, incluindo especialistas em segurança, revise como nosso sistema funciona e valide nossas promessas de privacidade. Acreditamos que a transparência é a melhor forma de construir confiança. <a href="https://github.com/SansaoYago/Agente-Emprestimos" target="_blank">(Clique Aqui para acessar o Repositório)</a></p>
-        </article>
-    
-        <article>
-            <h2>7. Alterações a Esta Política:</h2>
-    
-            <p>Podemos atualizar nossa Política de Privacidade periodicamente. Notificaremos você sobre quaisquer alterações publicando a nova política nesta página.</p>
-        </article>
-    </section>
-    
-    <br>
-    <section id="fluxograma">
-        <p>
-            Fluxograma de Privacidade e Segurança (Imagem)
-            Aqui está o conceito para um fluxograma que visualiza as camadas de privacidade. Eu vou gerar a imagem.
-        </p>
-    
-        <img width="fit-content" src="../img/fluxograma.png" alt="">
-    </section>
-    <br>
-    -----------------------------------------------------------
-    <br>
-    <section>
-        Esquemas de Segurança Bem Divididos (Tabelas SQL e Políticas RLS)
-        Aqui estão os comandos SQL que garantem todas as camadas de segurança e privacidade que você deseja, com explicações detalhadas para cada um.
-    
-        <pre style="background-color: #22252D; color: white;">
+    <div class="contain">
+            <section id="Privacidade">
+                <article>
+                    <p>Bem-vindo ao Agente Empréstimos! Sua privacidade é nossa prioridade máxima. Esta política explica
+                        como suas informações são tratadas em nossa plataforma.</p>
+                </article>
+                <article>
+                    <h2>1. Nosso Compromisso com a Sua Privacidade:</h2>
+                    <p>No Agente Empréstimos, implementamos um design focado na privacidade desde o início. Isso
+                        significa
+                        que seus dados financeiros (saldo, lucro, detalhes de empréstimos) são acessíveis apenas por
+                        você.
+                        Mesmo nós, os desenvolvedores da plataforma, não temos acesso direto ao conteúdo dos seus dados
+                        transacionais.</p>
+                </article>
+                <article>
+                    <h2>2. Quais Dados Coletamos e Por Quê:</h2>
+                    <p>Informações de Autenticação: Coletamos seu e-mail e senha para criar e proteger sua conta. Usamos
+                        o
+                        Supabase Auth, um serviço seguro, para gerenciar isso. Seu e-mail pode ser usado para
+                        recuperação de
+                        senha ou comunicações essenciais do sistema.</p>
+                    <p>Dados Financeiros e de Empréstimos: Quando você registra um empréstimo (nome do cliente, valor,
+                        parcelas, datas, WhatsApp do cliente), esses dados são armazenados de forma segura e privada
+                        para
+                        sua conta. Usamos essas informações para:</p>
+                    <ul>
+                        <li>Gerenciar seus empréstimos ativos e históricos.</li>
+                        <li>Calcular seu saldo e lucro.</li>
+                        <li>Gerar comprovantes e recibos em PDF para seus clientes.</li>
+                        <li>Aplicar a lista de negativação que você mesmo gerencia.</li>
+                    </ul>
+                    <p>Preferências Locais: Armazenamos em seu próprio dispositivo (LocalStorage) uma preferência para
+                        "ocultar o capital" na tela principal. Isso é apenas para sua conveniência e segurança visual, e
+                        não
+                        é compartilhado conosco.</p>
+                </article>
+                <article>
+                    <h2>3. Como Seus Dados São Protegidos (Segurança em Camadas):</h2>
+                    <p>Nosso sistema foi construído com as seguintes camadas de segurança:</p>
+                    <ul>
+                        <li>Isolamento de Dados por Usuário (Row Level Security - RLS): Esta é a nossa principal
+                            garantia. O
+                            banco de dados é configurado para que cada usuário só possa acessar suas próprias
+                            informações.
+                            Isso significa que é tecnicamente impossível para um usuário ver os dados de outro, ou para
+                            nós,
+                            como desenvolvedores, consultarmos diretamente o conteúdo financeiro das suas operações.
+                        </li>
+                        <li>Dados Criptografados em Trânsito: Toda a comunicação entre seu aplicativo e nosso servidor
+                            Supabase é protegida por criptografia SSL/TLS, garantindo que suas informações não possam
+                            ser
+                            interceptadas.</li>
+                        <li>Autenticação Segura (Supabase Auth): Utilizamos um serviço de autenticação robusto que
+                            protege
+                            suas credenciais.</li>
+                        <li>Controle de Acesso do Desenvolvedor: Mesmo como administradores do sistema, nosso acesso é
+                            restrito. Só podemos ver informações básicas de usuário (seu ID de usuário, e-mail) no
+                            painel de
+                            controle. Para realizar tarefas de suporte, como um reset de sua conta solicitado por você,
+                            usamos funções específicas do banco de dados que apagam seus dados sem que tenhamos que
+                            visualizá-los.</li>
+                    </ul>
+                </article>
+                <article>
+                    <h2>4. Compartilhamento de Dados:</h2>
+                    <p>Não compartilhamos, vendemos ou alugamos suas informações pessoais ou dados financeiros com
+                        terceiros, exceto conforme exigido por lei.</p>
+                </article>
+                <article>
+                    <h2>5. Controle e Gerenciamento de Seus Dados:</h2>
+                    <p>Você tem controle total sobre os empréstimos e a lista de negativação que cadastra.</p>
+                    <p>Você pode solicitar o reset completo da sua conta a qualquer momento. Ao fazer isso, todos os
+                        seus
+                        dados financeiros (empréstimos, configurações, blacklist) serão permanentemente excluídos.</p>
+                </article>
+                <article>
+                    <h2>6. Código Aberto e Transparência:</h2>
+                    <p>Nosso código-fonte é aberto e visível publicamente no GitHub. Isso permite que qualquer pessoa,
+                        incluindo especialistas em segurança, revise como nosso sistema funciona e valide nossas
+                        promessas
+                        de privacidade. Acreditamos que a transparência é a melhor forma de construir confiança. <br> <a
+                            href="https://github.com/SansaoYago/Agente-Emprestimos" target="_blank">Acessar o Repositório</a></p>
+                </article>
+                <article id="fim-priv">
+                    <h2>7. Alterações a Esta Política:</h2>
+                    <p>Podemos atualizar nossa Política de Privacidade periodicamente.
+                        Notificaremos você sobre quaisquer
+                        alterações publicando a nova política nesta página.</p>
+                </article>
+            </section>
+
+
+        <section id="fluxograma">
+            <p>
+                Fluxograma de Privacidade e Segurança (Imagem)
+                Aqui está o conceito para um fluxograma que visualiza as camadas de privacidade. Eu vou gerar a imagem.
+            </p>
+
+            <figure><img width="fit-content" src="../img/fluxograma.png" alt=""></figure>
+        </section>
+
+        <section id="SQL">
+            Esquemas de Segurança Bem Divididos (Tabelas SQL e Políticas RLS)
+            Aqui estão os comandos SQL que garantem todas as camadas de segurança e privacidade que você deseja, com
+            explicações detalhadas para cada um.
+
+            <pre>
             <code>
     
     <span class="comentario">
@@ -247,7 +272,12 @@
     </span>
             </code>
         </pre>
-    </section>
-</div>
+        </section>
+        <footer>
+            <a href="#" ><img src="img/github.png" alt="Icone Github" id="gith"></a>
+            <a href="#"><img src="img/whatsapp.png" alt="Icone WhatsApp" id="whats"></a>
+        </footer>
+    </div>
 </body>
+
 </html>
