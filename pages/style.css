@@ -130,11 +130,28 @@ footer {
     display: flex;
     flex-flow: row;
     align-items: center;
-    justify-content: flex-end;
-    gap: 55px;
+    justify-content: space-between;
     padding: 15px 15px;
     border-radius: 35px 0px 0px 35px;
     box-shadow: -5px 0px 15px 0px rgba(0, 0, 0, 0.416);
+}
+
+footer p {
+    color: #22252D;
+}
+
+
+footer p b {
+    color: rgba(255, 255, 255, 0.744);
+}
+
+footer b::after {
+    content: "\00A9";
+}
+
+footer span {
+    display: flex;
+    gap: 50px;
 }
 
 footer a img {
