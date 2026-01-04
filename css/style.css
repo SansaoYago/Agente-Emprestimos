@@ -273,9 +273,7 @@ main {
 
 #Privacidade {
     text-decoration: none;
-    position: absolute;
-    bottom: 20px;
-    left: auto;
+    margin-top: 20px;
     transition: 250ms;
 }
 
